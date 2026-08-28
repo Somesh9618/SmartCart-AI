@@ -5,7 +5,7 @@
 
 ---
 
-## 🌟 Key Highlights & Hackathon Winning Features
+## 🌟 Key Highlights
 
 1. **Full WebMCP Standard Compliance (`document.modelContext`)**:
    - 12 structured tools exposed directly in the browser environment with strict JSON schemas.
@@ -74,46 +74,3 @@ Open `http://localhost:8000`.
 Right-click `index.html` and select **Open with Live Server**.
 
 ---
-
-## 🌐 Deploy to Production (1-Click)
-
-### Deploy to Netlify / Vercel:
-1. Push the `smartcart-ai` folder to GitHub.
-2. Link your repository on [Netlify](https://www.netlify.com) or [Vercel](https://vercel.com).
-3. Set Publish Directory to `./` (root).
-4. Done! Your WebMCP app is live worldwide with full HTTPS support.
-
----
-
-## 🎬 Hackathon Pitch & Video Demo Script (2 Minutes)
-
-Use this script when recording your submission video or presenting to the judges:
-
-* **0:00 - 0:20 (The Problem):**
-  > *"Today's AI web agents rely on slow, brittle computer vision and DOM scraping. If a button moves, the agent breaks. WebMCP solves this by allowing websites to expose clean, structured tool APIs directly to AI models."*
-
-* **0:20 - 0:50 (Introducing SmartCart AI):**
-  > *"Meet SmartCart AI — the world's first agent-native supermarket and recipe concierge built on WebMCP. Notice how the page exposes 12 structured tools under `document.modelContext`. Now let's watch the agent in action with 1 click."*
-
-* **0:50 - 1:20 (Live Scenario Execution):**
-  > *"When we click 'Gluten-Free Italian Dinner for 4', the agent reasons in real time: it queries `getRecipeSuggestions`, discovers the Tuscan Pesto Penne, automatically executes `addRecipeIngredientsToCart`, finds a beverage, and calls `applyPromoCode('WEBMCP20')` to save 20%—all while the UI pulses and updates live without any page reloads."*
-
-* **1:20 - 1:40 (WebMCP Inspector & Safety):**
-  > *"Judges can open the WebMCP Live Inspector drawer to view raw JSON inputs, outputs, and millisecond execution telemetry. Notice our Human-in-the-Loop guardrail: when the agent is ready to checkout, it executes `requestCheckoutApproval`, presenting a cryptographic authorization token for human verification."*
-
-* **1:40 - 2:00 (Conclusion):**
-  > *"SmartCart AI showcases how WebMCP transforms traditional websites into high-speed, reliable, agentic powerhouses. Thank you!"*
-
----
-
-## ⚖️ Hackathon Judging Criteria Alignment
-
-| Criteria | Implementation in SmartCart AI |
-| :--- | :--- |
-| **WebMCP Standard Utilization** | Full `document.modelContext` exposure with complete JSON schemas, input validation, and execution handlers. |
-| **User Experience & Wow Factor** | Glassmorphic dark aesthetic, dynamic `@keyframes agentPulseGlow`, real-time macro meter, and 1-click demo scenarios. |
-| **Safety & Security** | Human-in-the-Loop checkout guardrail with token-based authorization. |
-| **Completeness & Polish** | 30+ products, 4 chef recipes, 3 coupons, live inspector, search, filter, and zero broken links. |
-
----
-*Built with ❤️ for the WebMCP Challenge.*
