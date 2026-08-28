@@ -1,16 +1,16 @@
 /**
- * SmartCart AI - WebMCP Protocol Implementation
+ * SmartCart AI - Fashion & Footwear WebMCP Protocol Implementation
  * Exposes document.modelContext according to WebMCP standard specification
  */
 
 import { store } from './state.js';
-import { CHEF_RECIPES } from './data.js';
+import { CURATED_OUTFITS } from './data.js';
 
 export class WebMCPProtocol {
   constructor() {
     this.version = "1.0.0";
-    this.name = "SmartCart AI Autonomous Supermarket WebMCP Server";
-    this.description = "Agent-native supermarket & recipe optimization tools exposed via browser DOM model context.";
+    this.name = "SmartCart AI Fashion & Footwear WebMCP Server";
+    this.description = "Agent-native apparel, sneaker, and curated outfit styling tools exposed via browser DOM model context.";
     this.tools = [];
     this.initTools();
     this.bindToGlobals();
@@ -21,34 +21,32 @@ export class WebMCPProtocol {
       // 1. Search Catalog
       {
         name: "searchCatalog",
-        description: "Searches available supermarket grocery products matching keywords, categories, dietary constraints, and price caps.",
+        description: "Searches clothes, sneakers, jackets, bottoms, and accessories matching keywords, categories, style tags, and price caps.",
         inputSchema: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Search keyword (e.g. 'spinach', 'salmon', 'milk', 'pasta')" },
+            query: { type: "string", description: "Search keyword (e.g. 'sneakers', 'hoodie', 'chelsea boots', 'denim', 'linen')" },
             category: { 
               type: "string", 
-              enum: ["all", "produce", "protein", "dairy", "pantry", "bakery", "snacks", "beverages"],
-              description: "Product category filter" 
+              enum: ["all", "footwear", "tops", "bottoms", "activewear", "accessories"],
+              description: "Apparel or footwear category" 
             },
-            maxPrice: { type: "number", description: "Maximum price per unit in USD" },
-            dietary: { 
+            maxPrice: { type: "number", description: "Maximum price per item in USD" },
+            styles: { 
               type: "array", 
-              items: { type: "string", enum: ["organic", "vegan", "keto", "gluten_free", "high_protein"] },
-              description: "Dietary restrictions or preferences" 
+              items: { type: "string", enum: ["streetwear", "smart_casual", "athletic", "sustainable", "formal"] },
+              description: "Aesthetic style preferences" 
             }
           }
         },
         handler: async (args = {}) => {
-          const startTime = performance.now();
-          const { query = "", category = "all", maxPrice = 100, dietary = [] } = args;
+          const { query = "", category = "all", maxPrice = 500, styles = [] } = args;
 
-          // Update UI filters to reflect agent exploration
           store.setFilters({
             searchQuery: query,
             category: category,
             maxPrice: maxPrice,
-            dietary: dietary
+            styles: styles
           });
 
           const results = store.getFilteredProducts().map(p => ({
@@ -56,17 +54,17 @@ export class WebMCPProtocol {
             name: p.name,
             category: p.category,
             price: p.price,
-            unit: p.unit,
-            dietary: p.dietary,
-            calories: p.nutrition.calories,
-            protein: p.nutrition.protein,
+            sizes: p.sizes,
+            colors: p.colors,
+            styles: p.styles,
+            material: p.material,
             stock: p.stock,
             description: p.description
           }));
 
           return {
             matchCount: results.length,
-            appliedFilters: { query, category, maxPrice, dietary },
+            appliedFilters: { query, category, maxPrice, styles },
             products: results.slice(0, 10)
           };
         }
@@ -75,20 +73,20 @@ export class WebMCPProtocol {
       // 2. Filter Catalog
       {
         name: "filterCatalog",
-        description: "Applies multi-dimensional catalog filters (sort order, dietary badges, max price).",
+        description: "Applies multi-dimensional fashion filters (style aesthetics, categories, price ceilings, sorting order).",
         inputSchema: {
           type: "object",
           properties: {
             category: { type: "string", description: "Category name or 'all'" },
             maxPrice: { type: "number", description: "Price ceiling in USD" },
-            dietaryPreferences: { 
+            styles: { 
               type: "array", 
               items: { type: "string" }, 
-              description: "List of dietary tags (e.g. ['organic', 'gluten_free'])" 
+              description: "Style tags (e.g. ['streetwear', 'smart_casual'])" 
             },
             sortBy: { 
               type: "string", 
-              enum: ["popular", "price-low", "price-high", "protein", "rating"],
+              enum: ["popular", "price-low", "price-high", "rating"],
               description: "Sorting criteria for catalog ranking" 
             }
           }
@@ -97,7 +95,7 @@ export class WebMCPProtocol {
           store.setFilters({
             category: args.category || store.filters.category,
             maxPrice: args.maxPrice !== undefined ? args.maxPrice : store.filters.maxPrice,
-            dietary: args.dietaryPreferences || store.filters.dietary,
+            styles: args.styles || store.filters.styles,
             sortBy: args.sortBy || store.filters.sortBy
           });
 
@@ -108,113 +106,111 @@ export class WebMCPProtocol {
         }
       },
 
-      // 3. Get Recipe Suggestions
+      // 3. Get Outfit Suggestions (Lookbook Studio)
       {
-        name: "getRecipeSuggestions",
-        description: "Retrieves curated chef recipes matched by cuisine, meal type, dietary restriction, budget, and serving size.",
+        name: "getOutfitSuggestions",
+        description: "Retrieves curated head-to-toe outfit lookbooks matching aesthetic style, occasion, and budget caps.",
         inputSchema: {
           type: "object",
           properties: {
-            dietary: { 
-              type: "array", 
-              items: { type: "string" },
-              description: "Dietary criteria (e.g. ['gluten_free'], ['keto'], ['vegan'])" 
-            },
-            maxBudget: { type: "number", description: "Target max budget in USD" },
-            servings: { type: "number", description: "Desired number of servings (default 2-4)" }
+            style: { type: "string", description: "Aesthetic (e.g. 'Streetwear', 'Smart Casual', 'Athletic')" },
+            occasion: { type: "string", description: "Occasion (e.g. 'Weekend', 'Evening / Office', 'Workout')" },
+            maxBudget: { type: "number", description: "Target max budget for the entire outfit in USD" }
           }
         },
         handler: async (args = {}) => {
-          const { dietary = [], maxBudget = 100, servings = 4 } = args;
+          const { style = "", maxBudget = 500 } = args;
           
-          const matched = CHEF_RECIPES.filter(recipe => {
-            if (dietary.length > 0) {
-              const matchesDiet = dietary.every(tag => recipe.dietary.includes(tag));
-              if (!matchesDiet) return false;
+          const matched = CURATED_OUTFITS.filter(outfit => {
+            if (style && !outfit.style.toLowerCase().includes(style.toLowerCase())) {
+              return false;
             }
-            if (recipe.estimatedCost > maxBudget) return false;
+            if (outfit.estimatedCost > maxBudget) return false;
             return true;
           });
 
           return {
             count: matched.length,
-            recipes: matched.map(r => ({
-              id: r.id,
-              name: r.name,
-              cuisine: r.cuisine,
-              prepTime: r.prepTime,
-              servings: r.servings,
-              estimatedCost: r.estimatedCost,
-              dietary: r.dietary,
-              nutritionPerServing: r.nutritionPerServing,
-              ingredientsCount: r.ingredients.length,
-              description: r.description
+            outfits: matched.map(o => ({
+              id: o.id,
+              name: o.name,
+              style: o.style,
+              occasion: o.occasion,
+              estimatedCost: o.estimatedCost,
+              piecesCount: o.piecesCount,
+              items: o.items,
+              description: o.description
             }))
           };
         }
       },
 
-      // 4. Add Recipe Ingredients To Cart
+      // 4. Add Outfit To Cart (Complete Head-to-Toe Bundle)
       {
-        name: "addRecipeIngredientsToCart",
-        description: "Automatically resolves and adds all required ingredient items from a recipe into the active cart.",
+        name: "addOutfitToCart",
+        description: "Adds all coordinated pieces of a curated outfit lookbook to the cart with default or custom sizes.",
         inputSchema: {
           type: "object",
           properties: {
-            recipeId: { type: "string", description: "Unique ID of the recipe (e.g. 'recipe-01')" },
-            servings: { type: "number", description: "Scale factor for servings (e.g. 4)" },
-            preferOrganic: { type: "boolean", description: "Whether to prioritize organic certified items" }
+            outfitId: { type: "string", description: "Unique ID of the lookbook outfit (e.g. 'outfit-01', 'outfit-02')" },
+            shoeSize: { type: "string", description: "Preferred shoe size (e.g. 'US 10')" },
+            clothingSize: { type: "string", description: "Preferred clothing size (e.g. 'M', 'L')" }
           },
-          required: ["recipeId"]
+          required: ["outfitId"]
         },
         handler: async (args) => {
-          const recipe = CHEF_RECIPES.find(r => r.id === args.recipeId);
-          if (!recipe) {
-            throw new Error(`Recipe with ID "${args.recipeId}" not found.`);
+          const outfit = CURATED_OUTFITS.find(o => o.id === args.outfitId);
+          if (!outfit) {
+            throw new Error(`Outfit with ID "${args.outfitId}" not found.`);
           }
 
           const addedItems = [];
-          for (const ing of recipe.ingredients) {
-            const product = store.products.find(p => p.id === ing.productId);
+          for (const itemRef of outfit.items) {
+            const product = store.products.find(p => p.id === itemRef.productId);
             if (product) {
-              store.addToCart(product.id, ing.quantity);
+              const chosenSize = product.category === 'footwear' 
+                ? (args.shoeSize || itemRef.defaultSize) 
+                : (args.clothingSize || itemRef.defaultSize);
+
+              store.addToCart(product.id, 1, chosenSize, product.colors ? product.colors[0] : null);
               addedItems.push({
                 productId: product.id,
                 name: product.name,
-                unitPrice: product.price,
-                quantityAdded: ing.quantity
+                size: chosenSize,
+                unitPrice: product.price
               });
             }
           }
 
           const cartSummary = store.getCartSummary();
           return {
-            recipeName: recipe.name,
-            addedIngredients: addedItems,
+            outfitName: outfit.name,
+            piecesAdded: addedItems,
             cartTotal: cartSummary.total,
             remainingBudget: cartSummary.remainingBudget
           };
         }
       },
 
-      // 5. Add To Cart
+      // 5. Add To Cart (Single Item)
       {
         name: "addToCart",
-        description: "Adds a specific grocery product to the shopping cart by product ID and quantity.",
+        description: "Adds a specific clothing, shoe, or accessory item to the shopping cart with specified size and color.",
         inputSchema: {
           type: "object",
           properties: {
-            productId: { type: "string", description: "Unique Product ID (e.g. 'prod-01', 'prod-07')" },
-            quantity: { type: "number", description: "Quantity to add (default 1)" }
+            productId: { type: "string", description: "Unique Product ID (e.g. 'shoe-01', 'top-01')" },
+            quantity: { type: "number", description: "Quantity to add (default 1)" },
+            size: { type: "string", description: "Selected size (e.g. 'M', 'L', 'US 10')" },
+            color: { type: "string", description: "Selected color variant" }
           },
           required: ["productId"]
         },
         handler: async (args) => {
-          const summary = store.addToCart(args.productId, args.quantity || 1);
-          const item = summary.items.find(i => i.id === args.productId);
+          const summary = store.addToCart(args.productId, args.quantity || 1, args.size, args.color);
           return {
             success: true,
-            itemAdded: item,
+            productId: args.productId,
             cartSummary: {
               totalItems: summary.totalItems,
               subtotal: summary.subtotal,
@@ -228,21 +224,19 @@ export class WebMCPProtocol {
       // 6. Update Cart Quantity
       {
         name: "updateCartQuantity",
-        description: "Modifies the quantity of an existing item in the cart or removes it if quantity is 0.",
+        description: "Modifies the quantity of an item in the cart or removes it if quantity is 0.",
         inputSchema: {
           type: "object",
           properties: {
-            productId: { type: "string", description: "Unique Product ID" },
+            cartIndex: { type: "number", description: "Index of the item in the cart" },
             quantity: { type: "number", description: "New desired quantity" }
           },
-          required: ["productId", "quantity"]
+          required: ["cartIndex", "quantity"]
         },
         handler: async (args) => {
-          const summary = store.updateCartQuantity(args.productId, args.quantity);
+          const summary = store.updateCartQuantity(args.cartIndex, args.quantity);
           return {
             success: true,
-            productId: args.productId,
-            newQuantity: args.quantity,
             newCartTotal: summary.total
           };
         }
@@ -251,19 +245,18 @@ export class WebMCPProtocol {
       // 7. Remove From Cart
       {
         name: "removeFromCart",
-        description: "Removes an item completely from the shopping cart.",
+        description: "Removes an item completely from the shopping cart by index.",
         inputSchema: {
           type: "object",
           properties: {
-            productId: { type: "string", description: "Unique Product ID to remove" }
+            cartIndex: { type: "number", description: "Index of the item to remove" }
           },
-          required: ["productId"]
+          required: ["cartIndex"]
         },
         handler: async (args) => {
-          const summary = store.removeFromCart(args.productId);
+          const summary = store.removeFromCart(args.cartIndex);
           return {
             success: true,
-            productId: args.productId,
             cartTotal: summary.total,
             remainingItems: summary.totalItems
           };
@@ -273,11 +266,11 @@ export class WebMCPProtocol {
       // 8. Apply Promo Code
       {
         name: "applyPromoCode",
-        description: "Applies a coupon promo code (e.g. 'WEBMCP20', 'HEALTHY10', 'FREESHIP') for instant discount.",
+        description: "Applies a coupon promo code (e.g. 'FASHION20', 'SNEAKER10', 'FREESHIP') for instant discount.",
         inputSchema: {
           type: "object",
           properties: {
-            code: { type: "string", description: "Coupon or discount code" }
+            code: { type: "string", description: "Discount promo code" }
           },
           required: ["code"]
         },
@@ -287,32 +280,10 @@ export class WebMCPProtocol {
         }
       },
 
-      // 9. Get Nutrition Summary
-      {
-        name: "getNutritionSummary",
-        description: "Calculates the total nutritional profile (Calories, Protein, Carbs, Fats, Fiber) across all current items in the cart.",
-        inputSchema: {
-          type: "object",
-          properties: {}
-        },
-        handler: async () => {
-          const summary = store.getCartSummary();
-          return {
-            nutrition: summary.nutrition,
-            itemCount: summary.totalItems,
-            macroPercentages: {
-              proteinPct: Math.round(((summary.nutrition.proteinGrams * 4) / Math.max(1, summary.nutrition.calories)) * 100),
-              carbsPct: Math.round(((summary.nutrition.carbsGrams * 4) / Math.max(1, summary.nutrition.calories)) * 100),
-              fatPct: Math.round(((summary.nutrition.fatGrams * 9) / Math.max(1, summary.nutrition.calories)) * 100)
-            }
-          };
-        }
-      },
-
-      // 10. Get Cart Summary
+      // 9. Get Cart Summary
       {
         name: "getCartSummary",
-        description: "Retrieves complete active cart state, line items, budget calculations, applied discounts, and fees.",
+        description: "Retrieves complete active fashion cart state, line items, sizes, colors, budget calculations, and discounts.",
         inputSchema: {
           type: "object",
           properties: {}
@@ -322,28 +293,28 @@ export class WebMCPProtocol {
         }
       },
 
-      // 11. Request Checkout Approval (Human-in-the-Loop Safety Guardrail)
+      // 10. Request Checkout Approval (Human-in-the-Loop Safety Guardrail)
       {
         name: "requestCheckoutApproval",
-        description: "SECURITY GUARDRAIL: Generates a human-in-the-loop authorization request before payment or final order submission.",
+        description: "SECURITY GUARDRAIL: Generates a human-in-the-loop authorization request before payment or final fashion order submission.",
         inputSchema: {
           type: "object",
           properties: {
-            deliveryAddress: { type: "string", description: "Shipping / delivery destination address" },
-            deliverySlot: { type: "string", description: "Preferred delivery window (e.g. 'Tomorrow 9:00 AM - 11:00 AM')" },
-            paymentMethod: { type: "string", enum: ["Apple Pay", "Credit Card", "Google Pay"], description: "Selected payment method" }
+            deliveryAddress: { type: "string", description: "Shipping address for apparel delivery" },
+            deliverySlot: { type: "string", description: "Delivery window preference (e.g. 'Express 2-Day Courier')" },
+            paymentMethod: { type: "string", enum: ["Apple Pay", "Credit Card", "Google Pay"], description: "Payment method" }
           },
           required: ["deliveryAddress"]
         },
         handler: async (args) => {
           const summary = store.getCartSummary();
           if (summary.totalItems === 0) {
-            throw new Error("Cannot checkout with an empty cart. Please add items first.");
+            throw new Error("Cannot checkout with an empty wardrobe cart. Please add items first.");
           }
 
           const approval = store.createPendingApproval({
             deliveryAddress: args.deliveryAddress,
-            deliverySlot: args.deliverySlot || "Tomorrow 10:00 AM - 12:00 PM (Express)",
+            deliverySlot: args.deliverySlot || "Express 2-Day Courier Delivery",
             paymentMethod: args.paymentMethod || "Credit Card (Ending in 4242)",
             summary: summary
           });
@@ -357,7 +328,7 @@ export class WebMCPProtocol {
         }
       },
 
-      // 12. Confirm Order
+      // 11. Confirm Order
       {
         name: "confirmOrder",
         description: "Confirms order using human-authorized approval token generated by requestCheckoutApproval.",
@@ -403,7 +374,6 @@ export class WebMCPProtocol {
     }
   }
 
-  // Export Tools JSON Schema for inspection or LLM system prompt injection
   getToolsManifest() {
     return {
       protocol: "WebMCP",
@@ -417,7 +387,6 @@ export class WebMCPProtocol {
     };
   }
 
-  // Expose on standard DOM properties
   bindToGlobals() {
     const mcpContext = {
       version: this.version,
@@ -430,7 +399,7 @@ export class WebMCPProtocol {
     try {
       document.modelContext = mcpContext;
     } catch (e) {
-      // In case document is not fully writable in some sandboxes
+      // safe fallback
     }
   }
 }

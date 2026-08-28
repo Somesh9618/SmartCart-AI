@@ -1,13 +1,13 @@
 /**
- * SmartCart AI - User Interface Controller & Reactive DOM Bindings
+ * SmartCart AI - Fashion & Footwear User Interface Controller
  */
 
 import { store } from './state.js';
 import { webMCP } from './webmcp.js';
 import { agentEngine } from './agent.js';
-import { CHEF_RECIPES } from './data.js';
+import { CURATED_OUTFITS } from './data.js';
 
-export class UIController {
+export class FashionUIController {
   constructor() {
     this.dom = {};
     this.initDOM();
@@ -21,11 +21,11 @@ export class UIController {
       productsGrid: document.getElementById("productsGrid"),
       productCountBadge: document.getElementById("productCountBadge"),
       categoryTabs: document.getElementById("categoryTabs"),
-      dietaryChips: document.getElementById("dietaryChips"),
+      styleChips: document.getElementById("styleChips"),
       searchInput: document.getElementById("searchInput"),
 
-      // Recipe Studio
-      recipesGrid: document.getElementById("recipesGrid"),
+      // Lookbook Studio
+      outfitsGrid: document.getElementById("outfitsGrid"),
 
       // Cart
       cartBadge: document.getElementById("cartBadge"),
@@ -35,15 +35,9 @@ export class UIController {
       cartPromoCode: document.getElementById("cartPromoCode"),
       cartDiscount: document.getElementById("cartDiscount"),
       cartTax: document.getElementById("cartTax"),
+      cartDelivery: document.getElementById("cartDelivery"),
       cartTotal: document.getElementById("cartTotal"),
       budgetRemainVal: document.getElementById("budgetRemainVal"),
-      budgetProgressRing: document.getElementById("budgetProgressRing"),
-
-      // Nutrition Macros
-      macroCalories: document.getElementById("macroCalories"),
-      macroProtein: document.getElementById("macroProtein"),
-      macroCarbs: document.getElementById("macroCarbs"),
-      macroFat: document.getElementById("macroFat"),
 
       // Agent Chat
       chatMessages: document.getElementById("chatMessages"),
@@ -90,28 +84,28 @@ export class UIController {
       store.setFilters({ category: cat });
     });
 
-    // 3. Dietary Chips
-    this.dom.dietaryChips?.addEventListener("click", (e) => {
+    // 3. Style Chips
+    this.dom.styleChips?.addEventListener("click", (e) => {
       const chip = e.target.closest(".dietary-chip");
       if (!chip) return;
       chip.classList.toggle("active");
-      const activeTags = Array.from(this.dom.dietaryChips.querySelectorAll(".dietary-chip.active")).map(c => c.dataset.dietary);
-      store.setFilters({ dietary: activeTags });
+      const activeStyles = Array.from(this.dom.styleChips.querySelectorAll(".dietary-chip.active")).map(c => c.dataset.style);
+      store.setFilters({ styles: activeStyles });
     });
 
     // 4. Cart List Quantity Actions
     this.dom.cartItemsList?.addEventListener("click", (e) => {
       const btn = e.target.closest(".btn-qty");
       if (!btn) return;
-      const prodId = btn.dataset.id;
+      const cartIdx = parseInt(btn.dataset.idx, 10);
       const action = btn.dataset.action;
-      const currentItem = store.cart.find(i => i.product.id === prodId);
-      if (!currentItem) return;
+      const item = store.cart[cartIdx];
+      if (!item) return;
 
       if (action === "inc") {
-        store.updateCartQuantity(prodId, currentItem.quantity + 1);
+        store.updateCartQuantity(cartIdx, item.quantity + 1);
       } else if (action === "dec") {
-        store.updateCartQuantity(prodId, currentItem.quantity - 1);
+        store.updateCartQuantity(cartIdx, item.quantity - 1);
       }
     });
 
@@ -151,9 +145,9 @@ export class UIController {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "smartcart-webmcp-manifest.json";
+      a.download = "smartcart-fashion-webmcp-manifest.json";
       a.click();
-      this.showToast("WebMCP JSON Manifest exported!");
+      this.showToast("Fashion WebMCP JSON Manifest exported!");
     });
 
     // 8. Human in the Loop Approval Actions
@@ -162,11 +156,11 @@ export class UIController {
         const token = store.pendingApproval.token;
         const finalized = store.authorizePendingApproval(token);
         this.dom.approvalModal?.classList.remove("active");
-        this.showToast(`Order ${finalized.orderId} Authorized & Placed!`, "success");
+        this.showToast(`Wardrobe Order ${finalized.orderId} Authorized & Placed!`, "success");
         agentEngine.emit("AGENT_MESSAGE", {
           role: "agent",
           type: "final",
-          text: `🎉 **Order Authorized & Confirmed!**\nOrder Reference: \`${finalized.orderId}\`. Scheduled for express courier delivery.`
+          text: `🎉 **Wardrobe Order Authorized & Confirmed!**\nOrder Reference: \`${finalized.orderId}\`. Scheduled for express courier delivery.`
         });
       }
     });
@@ -178,16 +172,16 @@ export class UIController {
     });
 
     // --- State Subscriptions ---
-    store.subscribe((event, payload) => {
+    store.subscribe((event) => {
       if (event === "FILTERS_CHANGED") {
         this.renderProducts();
       } else if (event === "CART_UPDATED" || event === "PROMO_APPLIED") {
         this.renderCart();
-        this.renderProducts(); // update stock or active highlights
+        this.renderProducts();
       } else if (event === "MCP_LOGGED") {
         this.renderMcpLogs();
       } else if (event === "APPROVAL_REQUESTED") {
-        this.showApprovalModal(payload);
+        this.showApprovalModal(store.pendingApproval);
       }
     });
 
@@ -196,10 +190,10 @@ export class UIController {
       if (event === "STATUS_CHANGE") {
         if (data.isBusy) {
           this.dom.agentStatusDot?.classList.add("busy");
-          if (this.dom.agentStatusText) this.dom.agentStatusText.textContent = "Reasoning...";
+          if (this.dom.agentStatusText) this.dom.agentStatusText.textContent = "Styling...";
         } else {
           this.dom.agentStatusDot?.classList.remove("busy");
-          if (this.dom.agentStatusText) this.dom.agentStatusText.textContent = "Online (WebMCP)";
+          if (this.dom.agentStatusText) this.dom.agentStatusText.textContent = "Online (Fashion WebMCP)";
         }
       } else if (event === "AGENT_MESSAGE") {
         this.appendChatMessage(data);
@@ -212,24 +206,24 @@ export class UIController {
 
   renderAll() {
     this.renderProducts();
-    this.renderRecipes();
+    this.renderOutfits();
     this.renderCart();
     this.renderMcpLogs();
     this.renderScenarioChips();
   }
 
-  // Render Product Catalog
+  // Render Fashion Catalog
   renderProducts() {
     if (!this.dom.productsGrid) return;
     const products = store.getFilteredProducts();
     if (this.dom.productCountBadge) {
-      this.dom.productCountBadge.textContent = `${products.length} items`;
+      this.dom.productCountBadge.textContent = `${products.length} styles`;
     }
 
     if (products.length === 0) {
       this.dom.productsGrid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-dim);">
-          <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No products match the selected filters.</p>
+          <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No apparel or footwear match the selected filters.</p>
           <button class="btn btn-secondary" onclick="window.resetSmartCartFilters()">Reset Filters</button>
         </div>
       `;
@@ -237,8 +231,9 @@ export class UIController {
     }
 
     this.dom.productsGrid.innerHTML = products.map(p => {
-      const inCartItem = store.cart.find(i => i.product.id === p.id);
-      const inCartQty = inCartItem ? inCartItem.quantity : 0;
+      const inCartQty = store.cart
+        .filter(i => i.product.id === p.id)
+        .reduce((sum, item) => sum + item.quantity, 0);
 
       return `
         <div class="product-card" id="card-${p.id}">
@@ -248,14 +243,18 @@ export class UIController {
           </div>
           <div class="product-info">
             <div class="product-tags">
-              ${p.dietary.slice(0, 2).map(tag => `<span class="tag-pill tag-${tag}">${tag.replace('_', '-')}</span>`).join('')}
+              ${p.styles.slice(0, 2).map(tag => `<span class="tag-pill tag-${tag}">${tag.replace('_', ' ')}</span>`).join('')}
             </div>
             <h4 class="product-name">${p.name}</h4>
-            <div class="product-unit">${p.unit} • ${p.nutrition.calories} kcal</div>
+            <div class="product-unit">${p.material}</div>
             
+            <div style="margin: 0.35rem 0; font-size: 0.7rem; color: var(--text-muted); display:flex; gap:0.25rem; flex-wrap:wrap;">
+              ${p.sizes ? p.sizes.slice(0, 4).map(s => `<span style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px;">${s}</span>`).join('') : ''}
+            </div>
+
             <div class="product-action-row">
               <span class="product-price">$${p.price.toFixed(2)}</span>
-              <button class="btn-add-cart" onclick="window.addToCartDirect('${p.id}')" title="Add to cart">
+              <button class="btn-add-cart" onclick="window.addToCartDirect('${p.id}')" title="Add item to wardrobe">
                 ${inCartQty > 0 ? `<span style="font-size:0.75rem; font-weight:800; color:var(--primary);">${inCartQty}</span>` : `+`}
               </button>
             </div>
@@ -265,28 +264,27 @@ export class UIController {
     }).join('');
   }
 
-  // Render Chef Recipes
-  renderRecipes() {
-    if (!this.dom.recipesGrid) return;
-    this.dom.recipesGrid.innerHTML = CHEF_RECIPES.map(r => `
-      <div class="recipe-card" id="recipe-${r.id}">
+  // Render Curated Outfits (Lookbook Studio)
+  renderOutfits() {
+    if (!this.dom.outfitsGrid) return;
+    this.dom.outfitsGrid.innerHTML = CURATED_OUTFITS.map(o => `
+      <div class="recipe-card" id="outfit-${o.id}">
         <div class="recipe-image-wrap">
-          <img src="${r.image}" alt="${r.name}" loading="lazy" />
-          <span class="recipe-badge-cuisine">${r.cuisine}</span>
+          <img src="${o.image}" alt="${o.name}" loading="lazy" />
+          <span class="recipe-badge-cuisine">${o.style}</span>
         </div>
         <div class="recipe-body">
           <div>
-            <h4 class="recipe-title">${r.name}</h4>
+            <h4 class="recipe-title">${o.name}</h4>
             <div class="recipe-meta-row">
-              <span>⏱️ ${r.prepTime}</span>
-              <span>👥 ${r.servings} Servings</span>
-              <span>🥗 ${r.dietary.join(', ')}</span>
+              <span>👔 ${o.piecesCount} Pieces</span>
+              <span>📍 ${o.occasion}</span>
             </div>
           </div>
           <div class="recipe-footer">
-            <span class="recipe-cost">~$${r.estimatedCost.toFixed(2)}</span>
-            <button class="btn btn-webmcp" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="window.addRecipeDirect('${r.id}')">
-              ⚡ Add Ingredients
+            <span class="recipe-cost">~$${o.estimatedCost.toFixed(2)}</span>
+            <button class="btn btn-webmcp" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="window.addOutfitDirect('${o.id}')">
+              ⚡ Style Full Look
             </button>
           </div>
         </div>
@@ -294,37 +292,37 @@ export class UIController {
     `).join('');
   }
 
-  // Render Cart & Nutrition Macros
+  // Render Fashion Cart
   renderCart() {
     const summary = store.getCartSummary();
 
-    // Badge
     if (this.dom.cartBadge) {
       this.dom.cartBadge.textContent = summary.totalItems;
       this.dom.cartBadge.style.display = summary.totalItems > 0 ? "flex" : "none";
     }
 
-    // Cart Items
     if (this.dom.cartItemsList) {
       if (store.cart.length === 0) {
         this.dom.cartItemsList.innerHTML = `
           <div style="text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.85rem;">
-            🛒 Shopping cart is empty.<br>Browse catalog or ask the AI agent to prepare a recipe!
+            🛍️ Wardrobe cart is empty.<br>Browse collection or ask the AI Stylist for outfit advice!
           </div>
         `;
       } else {
-        this.dom.cartItemsList.innerHTML = store.cart.map(item => `
+        this.dom.cartItemsList.innerHTML = store.cart.map((item, idx) => `
           <div class="cart-item-row" id="cart-item-${item.product.id}">
             <div class="cart-item-meta">
               <div class="cart-item-name">${item.product.name}</div>
-              <div class="cart-item-sub">$${item.product.price.toFixed(2)} / ${item.product.unit}</div>
+              <div class="cart-item-sub">
+                Size: <span style="color:var(--accent-cyan); font-weight:600;">${item.selectedSize}</span> • $${item.product.price.toFixed(2)}
+              </div>
             </div>
             <div class="cart-item-controls">
-              <button class="btn-qty" data-id="${item.product.id}" data-action="dec">-</button>
+              <button class="btn-qty" data-idx="${idx}" data-action="dec">-</button>
               <span style="font-weight:700; width:18px; text-align:center;">${item.quantity}</span>
-              <button class="btn-qty" data-id="${item.product.id}" data-action="inc">+</button>
+              <button class="btn-qty" data-idx="${idx}" data-action="inc">+</button>
             </div>
-            <div style="font-weight:700; min-width: 45px; text-align:right;">
+            <div style="font-weight:700; min-width: 50px; text-align:right;">
               $${(item.product.price * item.quantity).toFixed(2)}
             </div>
           </div>
@@ -332,12 +330,11 @@ export class UIController {
       }
     }
 
-    // Totals
     if (this.dom.cartSubtotal) this.dom.cartSubtotal.textContent = `$${summary.subtotal.toFixed(2)}`;
     if (this.dom.cartTax) this.dom.cartTax.textContent = `$${summary.estimatedTax.toFixed(2)}`;
+    if (this.dom.cartDelivery) this.dom.cartDelivery.textContent = summary.deliveryFee === 0 ? "FREE" : `$${summary.deliveryFee.toFixed(2)}`;
     if (this.dom.cartTotal) this.dom.cartTotal.textContent = `$${summary.total.toFixed(2)}`;
 
-    // Promo Row
     if (this.dom.cartPromoRow) {
       if (summary.appliedPromo) {
         this.dom.cartPromoRow.style.display = "flex";
@@ -348,26 +345,19 @@ export class UIController {
       }
     }
 
-    // Budget Tracker
     if (this.dom.budgetRemainVal) {
       this.dom.budgetRemainVal.textContent = `$${summary.remainingBudget.toFixed(2)}`;
       this.dom.budgetRemainVal.style.color = summary.isOverBudget ? "var(--accent-rose)" : "var(--primary)";
     }
-
-    // Nutrition Macros
-    if (this.dom.macroCalories) this.dom.macroCalories.textContent = `${summary.nutrition.calories} kcal`;
-    if (this.dom.macroProtein) this.dom.macroProtein.textContent = `${summary.nutrition.proteinGrams}g`;
-    if (this.dom.macroCarbs) this.dom.macroCarbs.textContent = `${summary.nutrition.carbsGrams}g`;
-    if (this.dom.macroFat) this.dom.macroFat.textContent = `${summary.nutrition.fatGrams}g`;
   }
 
-  // Render WebMCP Telemetry Logs
+  // Render Telemetry
   renderMcpLogs() {
     if (!this.dom.mcpLogsStream) return;
     if (store.mcpLogs.length === 0) {
       this.dom.mcpLogsStream.innerHTML = `
         <div style="text-align:center; padding: 2rem; color: var(--text-dim);">
-          No WebMCP tool calls recorded yet.<br>Click any demo scenario or chat to trigger tools!
+          No Fashion WebMCP tool calls recorded yet.<br>Click any styling demo scenario or chat to trigger tools!
         </div>
       `;
       return;
@@ -401,7 +391,7 @@ export class UIController {
     const scenarios = agentEngine.getScenarios();
     this.dom.scenarioChipsContainer.innerHTML = scenarios.map(s => `
       <div class="scenario-chip" data-scenario-id="${s.id}">
-        <span class="chip-icon">${s.icon === 'pasta' ? '🍝' : s.icon === 'salmon' ? '🥑' : '🛡️'}</span>
+        <span class="chip-icon">${s.icon === 'suit' ? '👔' : s.icon === 'running' ? '👟' : '🛡️'}</span>
         <div>
           <div class="chip-title">${s.title}</div>
           <div class="chip-subtitle">${s.badge}</div>
@@ -410,7 +400,6 @@ export class UIController {
     `).join('');
   }
 
-  // Visual Highlight Animation when agent touches items
   highlightToolTarget(toolName, args) {
     if (args.productId) {
       const el = document.getElementById(`card-${args.productId}`);
@@ -419,8 +408,8 @@ export class UIController {
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         setTimeout(() => el.classList.remove("agent-active"), 2500);
       }
-    } else if (args.recipeId) {
-      const el = document.getElementById(`recipe-${args.recipeId}`);
+    } else if (args.outfitId) {
+      const el = document.getElementById(`outfit-${args.outfitId}`);
       if (el) {
         el.classList.add("agent-active");
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -429,13 +418,11 @@ export class UIController {
     }
   }
 
-  // Chat message appenders
   appendChatMessage({ role, text, type }) {
     if (!this.dom.chatMessages) return;
     const bubble = document.createElement("div");
     bubble.className = `chat-bubble ${role} ${type || ''}`;
     
-    // Markdown-like formatting helper
     const formatted = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -457,7 +444,7 @@ export class UIController {
   }
 
   showApprovalModal(approval) {
-    if (!this.dom.approvalModal) return;
+    if (!this.dom.approvalModal || !approval) return;
     if (this.dom.approvalTokenVal) this.dom.approvalTokenVal.textContent = approval.token;
     if (this.dom.approvalAddressVal) this.dom.approvalAddressVal.textContent = approval.orderData.deliveryAddress;
     if (this.dom.approvalSlotVal) this.dom.approvalSlotVal.textContent = approval.orderData.deliverySlot;
@@ -488,13 +475,12 @@ export class UIController {
   }
 }
 
-// Global UI helper hooks
 window.addToCartDirect = (productId) => {
   store.addToCart(productId, 1);
 };
 
-window.addRecipeDirect = (recipeId) => {
-  webMCP.executeTool("addRecipeIngredientsToCart", { recipeId, servings: 4 });
+window.addOutfitDirect = (outfitId) => {
+  webMCP.executeTool("addOutfitToCart", { outfitId });
 };
 
 window.resetSmartCartFilters = () => {

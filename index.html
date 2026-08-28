@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartCart AI — Autonomous Supermarket & Recipe Optimizer (WebMCP)</title>
-  <meta name="description" content="Agent-native grocery shopping, meal planning, and cart optimization built on the open WebMCP standard.">
+  <title>SmartCart Fashion AI — Agent-Native Clothes, Shoes & Outfit Concierge (WebMCP)</title>
+  <meta name="description" content="Agent-native apparel, sneaker styling, and complete outfit coordination built on the open WebMCP standard.">
   
-  <!-- Modern Typography Fonts -->
+  <!-- Typography Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -24,12 +24,12 @@
       <a href="#" class="brand-logo" id="brandLogo">
         <div class="brand-icon-wrapper">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
           </svg>
         </div>
         <div>
-          <div class="brand-title">SmartCart AI</div>
-          <div class="brand-badge">WebMCP Agent Standard</div>
+          <div class="brand-title">SmartCart Fashion AI</div>
+          <div class="brand-badge">WebMCP Fashion Standard</div>
         </div>
       </a>
 
@@ -38,16 +38,16 @@
         <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search groceries, organic produce, high-protein keto items..." />
+        <input type="text" id="searchInput" class="search-input" placeholder="Search sneakers, chelsea boots, denim jackets, hoodies, activewear..." />
       </div>
 
       <!-- Header Actions -->
       <div class="header-actions">
         
         <!-- Live Budget Meter -->
-        <div class="budget-capsule" title="Budget Headroom Tracker">
+        <div class="budget-capsule" title="Wardrobe Budget Headroom Tracker">
           <span style="color:var(--text-muted);">Budget Left:</span>
-          <span id="budgetRemainVal" class="budget-val">$60.00</span>
+          <span id="budgetRemainVal" class="budget-val">$300.00</span>
         </div>
 
         <!-- WebMCP Live Inspector Toggle -->
@@ -59,7 +59,7 @@
         </button>
 
         <!-- Cart Quick Button -->
-        <button class="btn btn-secondary btn-icon-cart" id="btnHeaderCart" title="Shopping Cart">
+        <button class="btn btn-secondary btn-icon-cart" id="btnHeaderCart" title="Wardrobe Cart">
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
           </svg>
@@ -74,67 +74,66 @@
   <!-- Main Application Layout Grid -->
   <main class="main-layout">
     
-    <!-- LEFT COLUMN: Supermarket Storefront & Recipe Studio -->
+    <!-- LEFT COLUMN: Fashion Storefront & Lookbook Studio -->
     <section class="store-section">
       
       <!-- Interactive Hero Showcase with 1-Click Agent Scenarios -->
       <div class="glass-panel hero-banner">
-        <h1 class="hero-title">Experience <span>Agent-Native</span> Supermarket Intelligence</h1>
+        <h1 class="hero-title">Experience <span>Agent-Native</span> Fashion & Footwear Intelligence</h1>
         <p class="hero-subtitle">
-          WebMCP allows AI agents to directly query inventories, optimize recipes to budget, verify nutritional macros, and safely coordinate checkouts without DOM scraping.
+          WebMCP enables AI agents to coordinate head-to-toe outfits, recommend sizes, match colors, optimize promo codes, and safely coordinate wardrobe checkouts.
         </p>
 
         <!-- 1-Click Demo Scenarios Trigger Bar -->
         <div style="margin-bottom: 0.6rem; font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
-          ⚡ 1-Click Autonomous Demo Scenarios:
+          ⚡ 1-Click Autonomous Styling Scenarios:
         </div>
         <div class="scenario-chips-container" id="scenarioChipsContainer">
           <!-- Dynamically Rendered by ui.js -->
         </div>
       </div>
 
-      <!-- Category Navigation & Dietary Filters -->
+      <!-- Category Navigation & Style Filters -->
       <div class="glass-panel filter-bar">
         
         <!-- Category Tabs -->
         <div class="category-tabs" id="categoryTabs">
-          <button class="category-tab active" data-category="all">All Aisles</button>
-          <button class="category-tab" data-category="produce">Fresh Produce</button>
-          <button class="category-tab" data-category="protein">Protein & Seafood</button>
-          <button class="category-tab" data-category="dairy">Dairy & Alternatives</button>
-          <button class="category-tab" data-category="pantry">Pantry & Grains</button>
-          <button class="category-tab" data-category="bakery">Bakery</button>
-          <button class="category-tab" data-category="beverages">Beverages & Wellness</button>
+          <button class="category-tab active" data-category="all">All Collections</button>
+          <button class="category-tab" data-category="footwear">Sneakers & Boots</button>
+          <button class="category-tab" data-category="tops">Tops & Jackets</button>
+          <button class="category-tab" data-category="bottoms">Pants & Denim</button>
+          <button class="category-tab" data-category="activewear">Activewear</button>
+          <button class="category-tab" data-category="accessories">Accessories & Watches</button>
         </div>
 
-        <!-- Dietary Chips Row -->
-        <div class="dietary-tags-row" id="dietaryChips">
-          <span style="font-size:0.75rem; color:var(--text-dim); margin-right:0.25rem;">Dietary Filters:</span>
-          <button class="dietary-chip" data-dietary="organic">🌱 USDA Organic</button>
-          <button class="dietary-chip" data-dietary="gluten_free">🌾 Gluten-Free</button>
-          <button class="dietary-chip" data-dietary="keto">🥑 Ketogenic</button>
-          <button class="dietary-chip" data-dietary="vegan">🍃 100% Vegan</button>
-          <button class="dietary-chip" data-dietary="high_protein">💪 High-Protein</button>
+        <!-- Style Chips Row -->
+        <div class="dietary-tags-row" id="styleChips">
+          <span style="font-size:0.75rem; color:var(--text-dim); margin-right:0.25rem;">Style Aesthetics:</span>
+          <button class="dietary-chip" data-style="streetwear">🛹 Streetwear</button>
+          <button class="dietary-chip" data-style="smart_casual">👔 Smart Casual</button>
+          <button class="dietary-chip" data-style="athletic">🏃 Athletic</button>
+          <button class="dietary-chip" data-style="sustainable">🌱 Sustainable</button>
+          <button class="dietary-chip" data-style="formal">🎩 Formal</button>
         </div>
 
       </div>
 
-      <!-- Chef Recipe Studio Section -->
+      <!-- Curated Lookbook Studio Section -->
       <div>
         <div class="recipe-section-title" style="margin-bottom: 0.85rem;">
-          <span>👨‍🍳 Chef Recipe Studio (1-Click Agent Auto-Cart)</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">4 Curated Dinners</span>
+          <span>✨ Curated Outfit Lookbooks (1-Click Agent Auto-Style)</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">4 Coordinated Sets</span>
         </div>
-        <div class="recipes-grid" id="recipesGrid">
+        <div class="recipes-grid" id="outfitsGrid">
           <!-- Dynamically Rendered by ui.js -->
         </div>
       </div>
 
-      <!-- Product Catalog Section -->
+      <!-- Fashion Catalog Section -->
       <div>
         <div class="recipe-section-title" style="margin-bottom: 0.85rem;">
-          <span>🛒 Grocery Aisles Catalog</span>
-          <span id="productCountBadge" class="brand-badge">Loading items...</span>
+          <span>👟 Apparel, Footwear & Accessories</span>
+          <span id="productCountBadge" class="brand-badge">Loading collection...</span>
         </div>
         <div class="products-grid" id="productsGrid">
           <!-- Dynamically Rendered by ui.js -->
@@ -143,17 +142,17 @@
 
     </section>
 
-    <!-- RIGHT COLUMN: AI Agent Studio & Cart Drawer -->
+    <!-- RIGHT COLUMN: AI Agent Stylist & Cart Drawer -->
     <aside class="agent-panel-container">
       
-      <!-- Active Shopping Cart & Nutrition Macros Widget -->
+      <!-- Active Shopping Cart Widget -->
       <div class="glass-panel cart-widget">
         <div class="widget-header">
           <div class="widget-title">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
             </svg>
-            Active Shopping Cart
+            Wardrobe Cart
           </div>
           <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="store.clearCart()">Clear</button>
         </div>
@@ -161,31 +160,6 @@
         <!-- Cart Items Scroll Area -->
         <div class="cart-items-scroll" id="cartItemsList">
           <!-- Dynamically Rendered -->
-        </div>
-
-        <!-- Aggregated Nutrition Macro Meter -->
-        <div>
-          <div style="font-size:0.7rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; margin-bottom:0.35rem;">
-            Real-Time Nutrition Macros
-          </div>
-          <div class="nutrition-meter-box">
-            <div class="macro-pill">
-              <div class="macro-label">Calories</div>
-              <div class="macro-value" id="macroCalories">0 kcal</div>
-            </div>
-            <div class="macro-pill">
-              <div class="macro-label" style="color:#34d399;">Protein</div>
-              <div class="macro-value" id="macroProtein">0g</div>
-            </div>
-            <div class="macro-pill">
-              <div class="macro-label" style="color:#38bdf8;">Carbs</div>
-              <div class="macro-value" id="macroCarbs">0g</div>
-            </div>
-            <div class="macro-pill">
-              <div class="macro-label" style="color:#f59e0b;">Fats</div>
-              <div class="macro-value" id="macroFat">0g</div>
-            </div>
-          </div>
         </div>
 
         <!-- Totals & Price Breakdown -->
@@ -199,6 +173,10 @@
             <span id="cartDiscount">-$0.00</span>
           </div>
           <div class="total-row">
+            <span>Express Courier Shipping:</span>
+            <span id="cartDelivery" style="color:var(--primary);">FREE</span>
+          </div>
+          <div class="total-row">
             <span>Estimated Sales Tax (8.25%):</span>
             <span id="cartTax">$0.00</span>
           </div>
@@ -209,22 +187,22 @@
         </div>
 
         <!-- Checkout Action Button -->
-        <button class="btn btn-primary" style="width: 100%; padding: 0.75rem;" onclick="webMCP.executeTool('requestCheckoutApproval', { deliveryAddress: 'Current User Address' })">
+        <button class="btn btn-primary" style="width: 100%; padding: 0.75rem;" onclick="webMCP.executeTool('requestCheckoutApproval', { deliveryAddress: 'Penthouse 4B, 500 Howard St, San Francisco, CA' })">
           🔒 Secure Checkout (Human Approval)
         </button>
 
       </div>
 
-      <!-- AI Agent Assistant Chat Interface -->
+      <!-- AI Agent Stylist Assistant Chat Interface -->
       <div class="glass-panel agent-chat-card">
         <div class="agent-chat-header">
           <div class="agent-avatar-wrap">
-            <div class="agent-avatar">🤖</div>
+            <div class="agent-avatar">👔</div>
             <div>
-              <div style="font-size:0.9rem; font-weight:700; color:var(--text-main);">SmartCart Agent</div>
+              <div style="font-size:0.9rem; font-weight:700; color:var(--text-main);">SmartCart AI Stylist</div>
               <div class="agent-status-indicator">
                 <span class="status-dot" id="agentStatusDot"></span>
-                <span id="agentStatusText">Online (WebMCP)</span>
+                <span id="agentStatusText">Online (Fashion WebMCP)</span>
               </div>
             </div>
           </div>
@@ -234,16 +212,16 @@
         <!-- Chat Messages Container -->
         <div class="chat-messages-container" id="chatMessages">
           <div class="chat-bubble agent">
-            👋 <strong>Hi! I'm your SmartCart AI Concierge.</strong><br><br>
-            I connect natively to this supermarket via the <strong>WebMCP Standard</strong>.<br><br>
-            Try clicking any <strong>1-Click Demo Scenario</strong> above, or ask me naturally:<br>
-            <em>"Plan a gluten-free Italian dinner for 4 under $40 and apply the hackathon coupon!"</em>
+            👋 <strong>Hi! I'm your SmartCart AI Fashion Stylist.</strong><br><br>
+            I connect natively to this fashion store via the <strong>WebMCP Standard</strong>.<br><br>
+            Try clicking any <strong>1-Click Styling Scenario</strong> above, or ask me naturally:<br>
+            <em>"Coordinate a smart casual date night look under $250 with Chelsea boots and apply the 20% discount!"</em>
           </div>
         </div>
 
         <!-- Chat Input Form -->
         <div class="chat-input-wrapper">
-          <input type="text" id="chatInput" class="chat-input" placeholder="Ask AI agent to plan meals, optimize budget, or find items..." />
+          <input type="text" id="chatInput" class="chat-input" placeholder="Ask AI Stylist for outfit advice, shoes, size recommendations..." />
           <button id="btnSendChat" class="btn btn-primary" style="padding: 0.6rem 0.9rem;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -264,7 +242,7 @@
         <span style="font-size:1.2rem;">⚡</span>
         <div>
           <div style="font-weight:700; font-family:var(--font-display);">WebMCP Live Inspector</div>
-          <div style="font-size:0.7rem; color:var(--accent-cyan);">document.modelContext Telemetry Stream</div>
+          <div style="font-size:0.7rem; color:var(--accent-cyan);">Fashion document.modelContext Telemetry</div>
         </div>
       </div>
       <div style="display:flex; gap:0.5rem;">
@@ -299,7 +277,7 @@
       </div>
 
       <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4;">
-        The AI Agent has completed basket assembly and calculated all applicable discounts. Please review the transaction summary below to authorize the order.
+        The AI Stylist has assembled your wardrobe items and applied your discounts. Please review the order summary below to authorize the transaction.
       </p>
 
       <div class="approval-details-box">
@@ -309,11 +287,11 @@
         </div>
         <div style="display:flex; justify-content:space-between;">
           <span style="color:var(--text-dim);">Delivery Destination:</span>
-          <span id="approvalAddressVal" style="font-weight:600; text-align:right;">742 Evergreen Terrace</span>
+          <span id="approvalAddressVal" style="font-weight:600; text-align:right;">Penthouse 4B, 500 Howard St</span>
         </div>
         <div style="display:flex; justify-content:space-between;">
-          <span style="color:var(--text-dim);">Time Window:</span>
-          <span id="approvalSlotVal" style="font-weight:600; color:var(--primary);">Tomorrow Morning (Priority)</span>
+          <span style="color:var(--text-dim);">Shipping Service:</span>
+          <span id="approvalSlotVal" style="font-weight:600; color:var(--primary);">Express 2-Day Courier</span>
         </div>
         <div style="display:flex; justify-content:space-between; padding-top:0.4rem; border-top:1px solid var(--border-subtle);">
           <span style="font-weight:700; color:#fff;">Total Authorized Amount:</span>
@@ -341,16 +319,15 @@
     import { store } from './js/state.js';
     import { webMCP } from './js/webmcp.js';
     import { agentEngine } from './js/agent.js';
-    import { UIController } from './js/ui.js';
+    import { FashionUIController } from './js/ui.js';
 
-    // Initialize UI on window load
     window.addEventListener('DOMContentLoaded', () => {
-      window.smartCartUI = new UIController();
+      window.smartCartUI = new FashionUIController();
       window.smartCartStore = store;
       window.smartCartAgent = agentEngine;
       window.smartCartMCP = webMCP;
 
-      console.log("%c SmartCart AI WebMCP Ready! %c document.modelContext loaded.", 
+      console.log("%c SmartCart Fashion AI WebMCP Ready! %c document.modelContext active.", 
         "background: #10b981; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;",
         "background: #06b6d4; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
       );

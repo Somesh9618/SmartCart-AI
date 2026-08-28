@@ -1,28 +1,28 @@
 /**
- * SmartCart AI - Reactive State Store
- * Centralized state management with subscriber pattern
+ * SmartCart AI - Fashion & Footwear Reactive State Store
+ * Centralized state management for apparel, shoes, outfit bundles, and WebMCP telemetry
  */
 
-import { INITIAL_PRODUCTS, CHEF_RECIPES, PROMO_CODES } from './data.js';
+import { INITIAL_PRODUCTS, CURATED_OUTFITS, PROMO_CODES } from './data.js';
 
-class StateStore {
+class FashionStateStore {
   constructor() {
     this.products = [...INITIAL_PRODUCTS];
-    this.recipes = [...CHEF_RECIPES];
+    this.outfits = [...CURATED_OUTFITS];
     this.promoCodes = { ...PROMO_CODES };
 
-    // Shopping Cart State
+    // Shopping Cart State (Items have productId, quantity, selectedSize, selectedColor)
     this.cart = [];
     this.appliedPromo = null;
-    this.budgetLimit = 60.00; // default $60 budget limit
+    this.budgetLimit = 300.00; // default $300 budget for fashion/outfits
 
     // Catalog Filter State
     this.filters = {
       searchQuery: "",
-      category: "all",
-      dietary: [], // e.g. ["organic", "keto", "vegan", "gluten_free", "high_protein"]
-      maxPrice: 30,
-      sortBy: "popular" // 'popular', 'price-low', 'price-high', 'protein'
+      category: "all", // 'all', 'footwear', 'tops', 'bottoms', 'activewear', 'accessories'
+      styles: [],      // ['streetwear', 'smart_casual', 'athletic', 'sustainable', 'formal']
+      maxPrice: 200,
+      sortBy: "popular" // 'popular', 'price-low', 'price-high', 'rating'
     };
 
     // Human-in-the-Loop Approval State
@@ -61,7 +61,8 @@ class StateStore {
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDesc = item.description.toLowerCase().includes(query);
         const matchesCat = item.category.toLowerCase().includes(query);
-        if (!matchesName && !matchesDesc && !matchesCat) return false;
+        const matchesMat = item.material.toLowerCase().includes(query);
+        if (!matchesName && !matchesDesc && !matchesCat && !matchesMat) return false;
       }
 
       // Category
@@ -74,17 +75,16 @@ class StateStore {
         return false;
       }
 
-      // Dietary Filters
-      if (this.filters.dietary.length > 0) {
-        const hasAllDietary = this.filters.dietary.every(tag => item.dietary.includes(tag));
-        if (!hasAllDietary) return false;
+      // Style Filters
+      if (this.filters.styles.length > 0) {
+        const hasMatch = this.filters.styles.some(s => item.styles.includes(s));
+        if (!hasMatch) return false;
       }
 
       return true;
     }).sort((a, b) => {
       if (this.filters.sortBy === "price-low") return a.price - b.price;
       if (this.filters.sortBy === "price-high") return b.price - a.price;
-      if (this.filters.sortBy === "protein") return (b.nutrition.protein || 0) - (a.nutrition.protein || 0);
       if (this.filters.sortBy === "rating") return b.rating - a.rating;
       return b.reviews - a.reviews; // default popular
     });
@@ -99,15 +99,15 @@ class StateStore {
     this.filters = {
       searchQuery: "",
       category: "all",
-      dietary: [],
-      maxPrice: 30,
+      styles: [],
+      maxPrice: 200,
       sortBy: "popular"
     };
     this.notify("FILTERS_CHANGED", this.filters);
   }
 
   // --- CART METHODS ---
-  addToCart(productId, quantity = 1) {
+  addToCart(productId, quantity = 1, selectedSize = null, selectedColor = null) {
     const product = this.products.find(p => p.id === productId);
     if (!product) {
       throw new Error(`Product with ID "${productId}" not found in catalog.`);
@@ -117,40 +117,48 @@ class StateStore {
       throw new Error(`Only ${product.stock} units available for ${product.name}.`);
     }
 
-    const existingIndex = this.cart.findIndex(item => item.product.id === productId);
+    const size = selectedSize || (product.sizes ? product.sizes[0] : "Standard");
+    const color = selectedColor || (product.colors ? product.colors[0] : "Standard");
+
+    // Match by product ID AND selected size/color
+    const existingIndex = this.cart.findIndex(
+      item => item.product.id === productId && item.selectedSize === size && item.selectedColor === color
+    );
+
     if (existingIndex > -1) {
       this.cart[existingIndex].quantity += quantity;
     } else {
       this.cart.push({
         product: { ...product },
-        quantity
+        quantity,
+        selectedSize: size,
+        selectedColor: color
       });
     }
 
-    this.notify("CART_UPDATED", { action: "ADD", product, quantity });
+    this.notify("CART_UPDATED", { action: "ADD", product, quantity, size, color });
     return this.getCartSummary();
   }
 
-  updateCartQuantity(productId, quantity) {
-    const existingIndex = this.cart.findIndex(item => item.product.id === productId);
-    if (existingIndex === -1) {
-      throw new Error(`Product ${productId} is not currently in the cart.`);
+  updateCartQuantity(cartIndex, quantity) {
+    if (cartIndex < 0 || cartIndex >= this.cart.length) {
+      throw new Error(`Invalid cart item index.`);
     }
 
     if (quantity <= 0) {
-      return this.removeFromCart(productId);
+      this.cart.splice(cartIndex, 1);
+    } else {
+      this.cart[cartIndex].quantity = quantity;
     }
 
-    this.cart[existingIndex].quantity = quantity;
-    this.notify("CART_UPDATED", { action: "UPDATE_QTY", productId, quantity });
+    this.notify("CART_UPDATED", { action: "UPDATE_QTY" });
     return this.getCartSummary();
   }
 
-  removeFromCart(productId) {
-    const initialLen = this.cart.length;
-    this.cart = this.cart.filter(item => item.product.id !== productId);
-    if (this.cart.length !== initialLen) {
-      this.notify("CART_UPDATED", { action: "REMOVE", productId });
+  removeFromCart(cartIndex) {
+    if (cartIndex >= 0 && cartIndex < this.cart.length) {
+      this.cart.splice(cartIndex, 1);
+      this.notify("CART_UPDATED", { action: "REMOVE" });
     }
     return this.getCartSummary();
   }
@@ -166,7 +174,7 @@ class StateStore {
     const cleanCode = code.trim().toUpperCase();
     const promo = this.promoCodes[cleanCode];
     if (!promo) {
-      throw new Error(`Invalid promo code: "${code}". Try "WEBMCP20" for 20% off.`);
+      throw new Error(`Invalid promo code: "${code}". Try "FASHION20" for 20% off or "SNEAKER10".`);
     }
 
     this.appliedPromo = promo;
@@ -188,20 +196,11 @@ class StateStore {
   getCartSummary() {
     let subtotal = 0;
     let totalItems = 0;
-    let nutrition = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
 
     for (const item of this.cart) {
       const linePrice = item.product.price * item.quantity;
       subtotal += linePrice;
       totalItems += item.quantity;
-
-      if (item.product.nutrition) {
-        nutrition.calories += (item.product.nutrition.calories || 0) * item.quantity;
-        nutrition.protein += (item.product.nutrition.protein || 0) * item.quantity;
-        nutrition.carbs += (item.product.nutrition.carbs || 0) * item.quantity;
-        nutrition.fat += (item.product.nutrition.fat || 0) * item.quantity;
-        nutrition.fiber += (item.product.nutrition.fiber || 0) * item.quantity;
-      }
     }
 
     let discountAmount = 0;
@@ -214,16 +213,18 @@ class StateStore {
     }
 
     const estimatedTax = (subtotal - discountAmount) * 0.0825; // 8.25% sales tax
-    const deliveryFee = subtotal > 35 ? 0 : 4.99;
+    const deliveryFee = subtotal > 75 ? 0 : 9.99; // Free shipping over $75
     const total = Math.max(0, subtotal - discountAmount + estimatedTax + deliveryFee);
     const remainingBudget = this.budgetLimit - total;
 
     return {
-      items: this.cart.map(item => ({
+      items: this.cart.map((item, idx) => ({
+        index: idx,
         id: item.product.id,
         name: item.product.name,
         price: item.product.price,
-        unit: item.product.unit,
+        size: item.selectedSize,
+        color: item.selectedColor,
         quantity: item.quantity,
         lineTotal: Number((item.product.price * item.quantity).toFixed(2))
       })),
@@ -236,14 +237,7 @@ class StateStore {
       total: Number(total.toFixed(2)),
       budgetLimit: this.budgetLimit,
       remainingBudget: Number(remainingBudget.toFixed(2)),
-      isOverBudget: remainingBudget < 0,
-      nutrition: {
-        calories: Math.round(nutrition.calories),
-        proteinGrams: Math.round(nutrition.protein),
-        carbsGrams: Math.round(nutrition.carbs),
-        fatGrams: Math.round(nutrition.fat),
-        fiberGrams: Math.round(nutrition.fiber)
-      }
+      isOverBudget: remainingBudget < 0
     };
   }
 
@@ -256,7 +250,7 @@ class StateStore {
       params: toolCall.params,
       result: toolCall.result,
       error: toolCall.error || null,
-      durationMs: toolCall.durationMs || 12
+      durationMs: toolCall.durationMs || 10
     };
     this.mcpLogs.unshift(entry);
     if (this.mcpLogs.length > 50) this.mcpLogs.pop();
@@ -302,4 +296,4 @@ class StateStore {
   }
 }
 
-export const store = new StateStore();
+export const store = new FashionStateStore();
