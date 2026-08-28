@@ -64,22 +64,4 @@ Then open `http://localhost:3000` in your browser.
 
 ---
 
-## 🎬 Video Demo Pitch Script (2 Minutes)
 
-* **0:00 - 0:25 (The Problem):**
-  > *"When AI agents try to shop for clothes online today, they struggle with size drop-downs, color pickers, and coordinate guessing. WebMCP fixes this by giving websites a direct, structured tool API under `document.modelContext`."*
-
-* **0:25 - 0:50 (Introducing SmartCart Fashion AI):**
-  > *"Meet SmartCart Fashion AI—the agent-native wardrobe stylist. The site exposes 11 WebMCP tools covering footwear, apparel, accessories, and curated outfit lookbooks."*
-
-* **0:50 - 1:25 (Live Autonomous Styling Demo):**
-  > *"Let's click 'Smart Casual Date Night Outfit'. Watch the agent query `getOutfitSuggestions`, resolve all 4 coordinated pieces (Linen shirt, Chinos, Chelsea boots, and Leather belt) with size matching, apply promo code `FASHION20` for 20% off, and update our wardrobe cart live on screen!"*
-
-* **1:25 - 1:45 (WebMCP Inspector & Human-in-the-Loop):**
-  > *"Judges can open the WebMCP Live Inspector to see raw JSON inputs, outputs, and sub-15ms execution logs. And notice our safety guardrail: the agent invokes `requestCheckoutApproval`, presenting a security modal for explicit human authorization."*
-
-* **1:45 - 2:00 (Conclusion):**
-  > *"SmartCart Fashion AI proves how WebMCP revolutionizes fashion e-commerce for both AI agents and human shoppers. Thank you!"*
-
----
-*Built with ❤️ for the WebMCP Challenge.*
