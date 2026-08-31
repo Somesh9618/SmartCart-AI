@@ -30,15 +30,6 @@ export class FashionUIController {
       btnQuickGenerate: document.getElementById("btnQuickGenerate"),
       dynamicStyleSelect: document.getElementById("dynamicStyleSelect"),
 
-      // User Wardrobe Memory Profile
-      memoryShoeSize: document.getElementById("memoryShoeSize"),
-      memoryTopSize: document.getElementById("memoryTopSize"),
-      memoryBottomSize: document.getElementById("memoryBottomSize"),
-      memoryBeltSize: document.getElementById("memoryBeltSize"),
-      memoryBrandsPills: document.getElementById("memoryBrandsPills"),
-      btnResetMemory: document.getElementById("btnResetMemory"),
-      btnEditSizes: document.getElementById("btnEditSizes"),
-
       // Cart
       cartBadge: document.getElementById("cartBadge"),
       cartItemsList: document.getElementById("cartItemsList"),
@@ -57,7 +48,6 @@ export class FashionUIController {
       btnSendChat: document.getElementById("btnSendChat"),
       agentStatusDot: document.getElementById("agentStatusDot"),
       agentStatusText: document.getElementById("agentStatusText"),
-      scenarioChipsContainer: document.getElementById("scenarioChipsContainer"),
 
       // WebMCP Inspector Drawer
       inspectorDrawer: document.getElementById("inspectorDrawer"),
@@ -74,15 +64,6 @@ export class FashionUIController {
       approvalTotalVal: document.getElementById("approvalTotalVal"),
       btnAuthorizeOrder: document.getElementById("btnAuthorizeOrder"),
       btnCancelApproval: document.getElementById("btnCancelApproval"),
-
-      // Size Edit Modal
-      sizeEditModal: document.getElementById("sizeEditModal"),
-      editShoeSize: document.getElementById("editShoeSize"),
-      editTopSize: document.getElementById("editTopSize"),
-      editBottomSize: document.getElementById("editBottomSize"),
-      editBeltSize: document.getElementById("editBeltSize"),
-      btnSaveSizes: document.getElementById("btnSaveSizes"),
-      btnCancelSizeEdit: document.getElementById("btnCancelSizeEdit"),
 
       // Toast container
       toastContainer: document.getElementById("toastContainer")
@@ -125,41 +106,7 @@ export class FashionUIController {
       this.generateAndRenderFreshOutfit(style);
     });
 
-    // 6. Memory Profile Edit / Reset
-    this.dom.btnResetMemory?.addEventListener("click", () => {
-      store.clearMemory();
-      this.renderMemoryProfile();
-      this.showToast("Wardrobe memory reset.", "warning");
-    });
-
-    this.dom.btnEditSizes?.addEventListener("click", () => {
-      if (this.dom.sizeEditModal) {
-        if (this.dom.editShoeSize) this.dom.editShoeSize.value = store.memory.preferredSizes.shoes || "US 10";
-        if (this.dom.editTopSize) this.dom.editTopSize.value = store.memory.preferredSizes.tops || "L";
-        if (this.dom.editBottomSize) this.dom.editBottomSize.value = store.memory.preferredSizes.bottoms || "32x32";
-        if (this.dom.editBeltSize) this.dom.editBeltSize.value = store.memory.preferredSizes.accessories || "34";
-        this.dom.sizeEditModal.classList.add("active");
-      }
-    });
-
-    this.dom.btnSaveSizes?.addEventListener("click", () => {
-      const sizes = {
-        shoes: this.dom.editShoeSize ? this.dom.editShoeSize.value : "US 10",
-        tops: this.dom.editTopSize ? this.dom.editTopSize.value : "L",
-        bottoms: this.dom.editBottomSize ? this.dom.editBottomSize.value : "32x32",
-        accessories: this.dom.editBeltSize ? this.dom.editBeltSize.value : "34"
-      };
-      store.updateMemoryPreferences({ sizes });
-      this.dom.sizeEditModal?.classList.remove("active");
-      this.renderMemoryProfile();
-      this.showToast("Saved sizes updated in memory!", "success");
-    });
-
-    this.dom.btnCancelSizeEdit?.addEventListener("click", () => {
-      this.dom.sizeEditModal?.classList.remove("active");
-    });
-
-    // 7. Cart List Quantity Actions
+    // 6. Cart List Quantity Actions
     this.dom.cartItemsList?.addEventListener("click", (e) => {
       const btn = e.target.closest(".btn-qty");
       if (!btn) return;
@@ -175,7 +122,7 @@ export class FashionUIController {
       }
     });
 
-    // 8. Agent Chat Submission
+    // 7. Agent Chat Submission
     const submitChat = () => {
       const val = this.dom.chatInput?.value.trim();
       if (!val) return;
@@ -188,15 +135,7 @@ export class FashionUIController {
       if (e.key === "Enter") submitChat();
     });
 
-    // 9. Scenario Chips
-    this.dom.scenarioChipsContainer?.addEventListener("click", (e) => {
-      const chip = e.target.closest(".scenario-chip");
-      if (!chip) return;
-      const scenarioId = chip.dataset.scenarioId;
-      agentEngine.runScenario(scenarioId);
-    });
-
-    // 10. WebMCP Inspector Toggle
+    // 8. WebMCP Inspector Toggle
     this.dom.btnOpenInspector?.addEventListener("click", () => {
       this.dom.inspectorDrawer?.classList.add("open");
     });
@@ -216,7 +155,7 @@ export class FashionUIController {
       this.showToast("Fashion WebMCP JSON Manifest exported!");
     });
 
-    // 11. Human in the Loop Approval Actions
+    // 9. Human in the Loop Approval Actions
     this.dom.btnAuthorizeOrder?.addEventListener("click", () => {
       if (store.pendingApproval) {
         const token = store.pendingApproval.token;
@@ -244,13 +183,10 @@ export class FashionUIController {
       } else if (event === "CART_UPDATED" || event === "PROMO_APPLIED") {
         this.renderCart();
         this.renderProducts();
-        this.renderMemoryProfile();
       } else if (event === "MCP_LOGGED") {
         this.renderMcpLogs();
       } else if (event === "APPROVAL_REQUESTED") {
         this.showApprovalModal(store.pendingApproval);
-      } else if (event === "MEMORY_UPDATED") {
-        this.renderMemoryProfile();
       }
     });
 
@@ -276,10 +212,9 @@ export class FashionUIController {
   renderAll() {
     this.renderBrandSelect();
     this.renderProducts();
-    this.renderMemoryProfile();
     this.renderCart();
     this.renderMcpLogs();
-    this.renderScenarioChips();
+    this.renderWelcomeMemoryGreeting();
     this.generateAndRenderFreshOutfit("smart_casual");
   }
 
@@ -290,25 +225,35 @@ export class FashionUIController {
     `).join('');
   }
 
-  // Render User Wardrobe Memory Profile Widget
-  renderMemoryProfile() {
+  // Welcome greeting referencing persistent memory
+  renderWelcomeMemoryGreeting() {
+    if (!this.dom.chatMessages) return;
     const mem = store.memory;
-    if (this.dom.memoryShoeSize) this.dom.memoryShoeSize.textContent = mem.preferredSizes.shoes || "US 10";
-    if (this.dom.memoryTopSize) this.dom.memoryTopSize.textContent = mem.preferredSizes.tops || "L";
-    if (this.dom.memoryBottomSize) this.dom.memoryBottomSize.textContent = mem.preferredSizes.bottoms || "32x32";
-    if (this.dom.memoryBeltSize) this.dom.memoryBeltSize.textContent = mem.preferredSizes.accessories || "34";
+    const hasHistory = mem.favoriteBrands.length > 0 || mem.pastSelections.length > 0;
 
-    if (this.dom.memoryBrandsPills) {
-      if (mem.favoriteBrands.length === 0) {
-        this.dom.memoryBrandsPills.innerHTML = `<span style="color:var(--text-dim); font-size:0.75rem;">(Shopping will auto-learn favorite brands)</span>`;
-      } else {
-        this.dom.memoryBrandsPills.innerHTML = mem.favoriteBrands.map(b => `
-          <span class="tag-pill" style="color:var(--accent-cyan); background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.3); font-size:0.7rem;">
-            🏷️ ${b}
-          </span>
-        `).join('');
-      }
+    let greetingHtml = "";
+    if (hasHistory) {
+      const topBrands = mem.favoriteBrands.slice(0, 3).join(", ") || "Nike, Levi's, Ralph Lauren";
+      greetingHtml = `
+        👋 <strong>Welcome back!</strong><br><br>
+        I recall your wardrobe profile:<br>
+        • <strong>Saved Sizes:</strong> Shoe <code>${mem.preferredSizes.shoes}</code>, Top <code>${mem.preferredSizes.tops}</code>, Bottom <code>${mem.preferredSizes.bottoms}</code><br>
+        • <strong>Favorite Brands:</strong> <em>${topBrands}</em><br><br>
+        Ask me anything like: <em>"Style a smart casual look for tonight"</em> or <em>"Find me white sneakers"</em>!
+      `;
+    } else {
+      greetingHtml = `
+        👋 <strong>Hi! I'm your SmartCart AI Stylist.</strong><br><br>
+        I connect natively to 44+ brand-name clothes and sneakers via <strong>WebMCP</strong>.<br><br>
+        As you browse and select items, I automatically remember your sizes and favorite brands for future suggestions. What look would you like to explore today?
+      `;
     }
+
+    this.dom.chatMessages.innerHTML = `
+      <div class="chat-bubble agent">
+        ${greetingHtml}
+      </div>
+    `;
   }
 
   // Dynamic Outfit Generator & Showcase
@@ -347,7 +292,7 @@ export class FashionUIController {
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.75rem; color:var(--text-dim);">Sizes auto-matched from your Wardrobe Memory</span>
+          <span style="font-size:0.75rem; color:var(--text-dim);">Sizes tailored to your AI wardrobe memory</span>
           <button class="btn btn-primary" onclick="window.addDynamicOutfitBundle('${encodeURIComponent(JSON.stringify(outfit))}')" style="padding: 0.45rem 1rem; font-size: 0.825rem;">
             🛒 Add All 4 Pieces to Wardrobe Cart
           </button>
@@ -476,7 +421,7 @@ export class FashionUIController {
     if (store.mcpLogs.length === 0) {
       this.dom.mcpLogsStream.innerHTML = `
         <div style="text-align:center; padding: 2rem; color: var(--text-dim);">
-          No Fashion WebMCP tool calls recorded yet.<br>Click any styling demo scenario or chat to trigger tools!
+          No Fashion WebMCP tool calls recorded yet.<br>Ask the AI Stylist in chat to trigger tools!
         </div>
       `;
       return;
@@ -501,20 +446,6 @@ export class FashionUIController {
           <div style="margin:0.25rem 0; color:var(--accent-rose);">Error:</div>
           <pre class="mcp-json-block" style="color:var(--accent-rose);">${log.error}</pre>
         ` : ''}
-      </div>
-    `).join('');
-  }
-
-  renderScenarioChips() {
-    if (!this.dom.scenarioChipsContainer) return;
-    const scenarios = agentEngine.getScenarios();
-    this.dom.scenarioChipsContainer.innerHTML = scenarios.map(s => `
-      <div class="scenario-chip" data-scenario-id="${s.id}">
-        <span class="chip-icon">${s.icon === 'suit' ? '👔' : s.icon === 'running' ? '👟' : '🛡️'}</span>
-        <div>
-          <div class="chip-title">${s.title}</div>
-          <div class="chip-subtitle">${s.badge}</div>
-        </div>
       </div>
     `).join('');
   }

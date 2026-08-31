@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartCart Fashion AI — Multi-Brand Clothes, Shoes & Dynamic Outfit Concierge (WebMCP)</title>
-  <meta name="description" content="Agent-native 44+ multi-brand apparel & footwear concierge with dynamic algorithmic outfit generation and persistent wardrobe memory built on WebMCP.">
+  <meta name="description" content="Agent-native 44+ multi-brand apparel & footwear concierge with dynamic algorithmic outfit generation and persistent AI wardrobe memory built on WebMCP.">
   
   <!-- Typography Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,20 +77,15 @@
     <!-- LEFT COLUMN: Fashion Storefront & Dynamic Styling Studio -->
     <section class="store-section">
       
-      <!-- Interactive Hero Showcase with 1-Click Agent Scenarios -->
+      <!-- Clean Hero Banner (About the Website) -->
       <div class="glass-panel hero-banner">
-        <h1 class="hero-title">Multi-Brand <span>Agent-Native</span> Fashion & Sneaker Styling</h1>
-        <p class="hero-subtitle">
-          44+ premium items from Ralph Lauren, Nike, Levi's, Adidas, Fossil, Timberland & Zara. Our AI Stylist dynamically coordinates unique outfits tailored to your saved wardrobe memory.
+        <h1 class="hero-title">Welcome to <span>SmartCart Fashion AI</span></h1>
+        <p class="hero-subtitle" style="max-width: 850px; font-size: 1rem; line-height: 1.6; margin-bottom: 0.85rem;">
+          SmartCart Fashion AI is an <strong>agent-native multi-brand e-commerce experience</strong> built on the open <strong>WebMCP standard</strong> (<code>document.modelContext</code>). Explore 44+ premium shirts, jeans, sneakers, and accessories from global brands like <strong>Nike, Levi's, Ralph Lauren, Adidas, Fossil, Timberland, and Zara</strong>.
         </p>
-
-        <!-- 1-Click Demo Scenarios Trigger Bar -->
-        <div style="margin-bottom: 0.6rem; font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
-          ⚡ 1-Click Memory-Aware Styling Workflows:
-        </div>
-        <div class="scenario-chips-container" id="scenarioChipsContainer">
-          <!-- Dynamically Rendered by ui.js -->
-        </div>
+        <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5;">
+          🤖 <strong>AI Personal Stylist with Memory:</strong> Our embedded AI stylist automatically remembers your preferred brands, sizes, and past choices across visits to generate unique, personalized outfit combinations whenever you ask.
+        </p>
       </div>
 
       <!-- Dynamic Unique Outfit Generator Bar -->
@@ -166,48 +161,8 @@
 
     </section>
 
-    <!-- RIGHT COLUMN: User Memory Profile, AI Agent Stylist & Cart Drawer -->
+    <!-- RIGHT COLUMN: AI Agent Stylist & Cart Drawer -->
     <aside class="agent-panel-container">
-
-      <!-- Persistent User Wardrobe Memory Profile Widget -->
-      <div class="glass-panel" style="padding: 1rem 1.15rem; border: 1px solid rgba(139, 92, 246, 0.3);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-          <div style="display:flex; align-items:center; gap:0.4rem;">
-            <span style="font-size:1.1rem;">🧠</span>
-            <span style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:#d8b4fe;">Wardrobe Style Memory</span>
-          </div>
-          <div style="display:flex; gap:0.35rem;">
-            <button id="btnEditSizes" class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.7rem;" title="Edit Saved Sizes">Edit</button>
-            <button id="btnResetMemory" class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.7rem;" title="Reset Style Memory">Reset</button>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.4rem; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:var(--radius-sm); text-align:center; margin-bottom:0.6rem;">
-          <div>
-            <div style="font-size:0.65rem; color:var(--text-dim);">Shoes</div>
-            <div id="memoryShoeSize" style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan);">US 10</div>
-          </div>
-          <div>
-            <div style="font-size:0.65rem; color:var(--text-dim);">Tops</div>
-            <div id="memoryTopSize" style="font-size:0.8rem; font-weight:700; color:var(--primary);">L</div>
-          </div>
-          <div>
-            <div style="font-size:0.65rem; color:var(--text-dim);">Pants</div>
-            <div id="memoryBottomSize" style="font-size:0.8rem; font-weight:700; color:#f59e0b;">32x32</div>
-          </div>
-          <div>
-            <div style="font-size:0.65rem; color:var(--text-dim);">Belt</div>
-            <div id="memoryBeltSize" style="font-size:0.8rem; font-weight:700; color:#d8b4fe;">34</div>
-          </div>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-          <span style="font-size:0.68rem; color:var(--text-dim);">Learned Brand Affinities:</span>
-          <div id="memoryBrandsPills" style="display:flex; gap:0.25rem; flex-wrap:wrap;">
-            <!-- Brand tags populated by ui.js -->
-          </div>
-        </div>
-      </div>
       
       <!-- Active Shopping Cart Widget -->
       <div class="glass-panel cart-widget">
@@ -275,18 +230,12 @@
 
         <!-- Chat Messages Container -->
         <div class="chat-messages-container" id="chatMessages">
-          <div class="chat-bubble agent">
-            👋 <strong>Hi! I'm your SmartCart AI Stylist with Memory.</strong><br><br>
-            I connect natively to 44+ brand-name clothes and shoes via <strong>WebMCP</strong>.<br><br>
-            I recall your saved sizes (Shoe: <code>US 10</code>, Top: <code>L</code>, Bottom: <code>32x32</code>) and favorite brands.<br><br>
-            Try asking me naturally:<br>
-            <em>"Style me a fresh outfit with Nike and Levi's under $300!"</em>
-          </div>
+          <!-- Dynamically populated with memory greeting -->
         </div>
 
         <!-- Chat Input Form -->
         <div class="chat-input-wrapper">
-          <input type="text" id="chatInput" class="chat-input" placeholder="Ask AI Stylist for fresh combinations, sizes, brands..." />
+          <input type="text" id="chatInput" class="chat-input" placeholder="Ask AI Stylist: 'Style an outfit with Nike & Levi's', 'Find shoes', etc." />
           <button id="btnSendChat" class="btn btn-primary" style="padding: 0.6rem 0.9rem;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -299,43 +248,6 @@
     </aside>
 
   </main>
-
-  <!-- Size Edit Modal -->
-  <div class="modal-overlay" id="sizeEditModal">
-    <div class="approval-modal-card" style="max-width: 440px;">
-      <div style="display:flex; align-items:center; gap:0.5rem;">
-        <span style="font-size:1.4rem;">📏</span>
-        <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700;">Edit Saved Wardrobe Sizes</h3>
-      </div>
-      <p style="font-size:0.8rem; color:var(--text-muted);">
-        These sizes will be saved in your style memory and automatically matched during dynamic outfit generation.
-      </p>
-
-      <div style="display:flex; flex-direction:column; gap:0.75rem;">
-        <div>
-          <label style="font-size:0.75rem; color:var(--text-dim);">Shoe Size (Sneakers & Boots)</label>
-          <input id="editShoeSize" type="text" class="chat-input" style="width:100%; margin-top:0.25rem;" placeholder="e.g. US 10, US 9.5" />
-        </div>
-        <div>
-          <label style="font-size:0.75rem; color:var(--text-dim);">Top Size (Shirts & Hoodies)</label>
-          <input id="editTopSize" type="text" class="chat-input" style="width:100%; margin-top:0.25rem;" placeholder="e.g. M, L, XL" />
-        </div>
-        <div>
-          <label style="font-size:0.75rem; color:var(--text-dim);">Bottom Size (Jeans & Chinos)</label>
-          <input id="editBottomSize" type="text" class="chat-input" style="width:100%; margin-top:0.25rem;" placeholder="e.g. 32x32, 34x32" />
-        </div>
-        <div>
-          <label style="font-size:0.75rem; color:var(--text-dim);">Belt Size</label>
-          <input id="editBeltSize" type="text" class="chat-input" style="width:100%; margin-top:0.25rem;" placeholder="e.g. 34, 36" />
-        </div>
-      </div>
-
-      <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
-        <button id="btnCancelSizeEdit" class="btn btn-secondary">Cancel</button>
-        <button id="btnSaveSizes" class="btn btn-primary">Save to Memory</button>
-      </div>
-    </div>
-  </div>
 
   <!-- WebMCP Live Inspector & DevTools Drawer -->
   <aside class="inspector-drawer" id="inspectorDrawer">
