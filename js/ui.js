@@ -31,9 +31,12 @@ export class FashionUIController {
       btnQuickGenerate: document.getElementById("btnQuickGenerate"),
       dynamicStyleSelect: document.getElementById("dynamicStyleSelect"),
 
-      // Cart
+      // Cart & Budget Controls
       cartBadge: document.getElementById("cartBadge"),
       btnClearCart: document.getElementById("btnClearCart"),
+      inputBudgetLimit: document.getElementById("inputBudgetLimit"),
+      inputCartBudget: document.getElementById("inputCartBudget"),
+      cartBudgetRemainVal: document.getElementById("cartBudgetRemainVal"),
       cartItemsList: document.getElementById("cartItemsList"),
       cartSubtotal: document.getElementById("cartSubtotal"),
       cartPromoRow: document.getElementById("cartPromoRow"),
@@ -118,6 +121,32 @@ export class FashionUIController {
       this.showToast("Wardrobe cart cleared successfully!", "warning");
     });
 
+    // 7. User Editable Budget Inputs (Header & Cart synchronization)
+    const handleBudgetInput = (val) => {
+      const num = parseFloat(val);
+      if (!isNaN(num) && num > 0) {
+        store.setBudgetLimit(num);
+      }
+    };
+
+    this.dom.inputBudgetLimit?.addEventListener("input", (e) => {
+      handleBudgetInput(e.target.value);
+      if (this.dom.inputCartBudget) this.dom.inputCartBudget.value = e.target.value;
+    });
+
+    this.dom.inputCartBudget?.addEventListener("input", (e) => {
+      handleBudgetInput(e.target.value);
+      if (this.dom.inputBudgetLimit) this.dom.inputBudgetLimit.value = e.target.value;
+    });
+
+    this.dom.inputBudgetLimit?.addEventListener("change", () => {
+      this.showToast(`Budget limit updated to $${store.budgetLimit.toFixed(2)}`, "success");
+    });
+
+    this.dom.inputCartBudget?.addEventListener("change", () => {
+      this.showToast(`Budget limit updated to $${store.budgetLimit.toFixed(2)}`, "success");
+    });
+
     // 7. Cart List Quantity Actions
     this.dom.cartItemsList?.addEventListener("click", (e) => {
       const btn = e.target.closest(".btn-qty");
@@ -192,7 +221,7 @@ export class FashionUIController {
     store.subscribe((event) => {
       if (event === "FILTERS_CHANGED") {
         this.renderProducts();
-      } else if (event === "CART_UPDATED" || event === "PROMO_APPLIED") {
+      } else if (event === "CART_UPDATED" || event === "PROMO_APPLIED" || event === "BUDGET_CHANGED") {
         this.renderCart();
         this.renderProducts();
       } else if (event === "MCP_LOGGED") {
@@ -430,9 +459,25 @@ export class FashionUIController {
       }
     }
 
+    const remainText = `$${summary.remainingBudget.toFixed(2)}`;
+    const remainColor = summary.isOverBudget ? "var(--accent-rose)" : "var(--primary)";
+
     if (this.dom.budgetRemainVal) {
-      this.dom.budgetRemainVal.textContent = `$${summary.remainingBudget.toFixed(2)}`;
-      this.dom.budgetRemainVal.style.color = summary.isOverBudget ? "var(--accent-rose)" : "var(--primary)";
+      this.dom.budgetRemainVal.textContent = remainText;
+      this.dom.budgetRemainVal.style.color = remainColor;
+    }
+
+    if (this.dom.cartBudgetRemainVal) {
+      this.dom.cartBudgetRemainVal.textContent = remainText;
+      this.dom.cartBudgetRemainVal.style.color = remainColor;
+    }
+
+    if (this.dom.inputBudgetLimit && document.activeElement !== this.dom.inputBudgetLimit) {
+      this.dom.inputBudgetLimit.value = store.budgetLimit;
+    }
+
+    if (this.dom.inputCartBudget && document.activeElement !== this.dom.inputCartBudget) {
+      this.dom.inputCartBudget.value = store.budgetLimit;
     }
   }
 

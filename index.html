@@ -44,10 +44,16 @@
       <!-- Header Actions -->
       <div class="header-actions">
         
-        <!-- Live Budget Meter -->
-        <div class="budget-capsule" title="Wardrobe Budget Headroom Tracker">
-          <span style="color:var(--text-muted);">Budget Left:</span>
-          <span id="budgetRemainVal" class="budget-val">$400.00</span>
+        <!-- Live Editable Budget Meter -->
+        <div class="budget-capsule" id="budgetCapsule" title="Click to edit your wardrobe budget limit">
+          <span style="color:var(--text-muted); font-size:0.78rem;">Budget:</span>
+          <div style="display:flex; align-items:center; gap:0.15rem;">
+            <span style="color:var(--primary); font-weight:800; font-size:0.85rem;">$</span>
+            <input type="number" id="inputBudgetLimit" value="400" min="10" max="5000" step="10" 
+                   style="width: 60px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); color: var(--primary); font-weight: 800; font-size: 0.85rem; outline: none; border-radius: 4px; padding: 1px 4px; text-align: center;" 
+                   title="Type to change your total wardrobe budget" />
+          </div>
+          <span style="color:var(--text-dim); font-size:0.75rem;">(Left: <span id="budgetRemainVal" style="color:var(--primary); font-weight:700;">$400.00</span>)</span>
         </div>
 
         <!-- WebMCP Live Inspector Toggle -->
@@ -183,6 +189,15 @@
 
         <!-- Totals & Price Breakdown -->
         <div class="cart-totals-box">
+          <div class="total-row" style="background: rgba(16, 185, 129, 0.08); padding: 0.35rem 0.5rem; border-radius: 6px; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Budget Target:</span>
+            <div style="display: flex; align-items: center; gap: 0.2rem;">
+              <span style="color: var(--primary); font-weight: 800; font-size: 0.825rem;">$</span>
+              <input type="number" id="inputCartBudget" value="400" min="10" max="5000" step="10" 
+                     style="width: 60px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); color: var(--primary); font-weight: 800; font-size: 0.825rem; border-radius: 4px; padding: 2px 4px; text-align: right; outline: none;" 
+                     title="Edit your budget limit" />
+            </div>
+          </div>
           <div class="total-row">
             <span>Subtotal:</span>
             <span id="cartSubtotal">$0.00</span>
@@ -202,6 +217,10 @@
           <div class="total-row grand-total">
             <span>Estimated Total:</span>
             <span id="cartTotal" style="color:var(--primary);">$0.00</span>
+          </div>
+          <div class="total-row" style="padding-top: 0.35rem; border-top: 1px dashed var(--border-subtle); font-size: 0.8rem;">
+            <span>Budget Headroom:</span>
+            <span id="cartBudgetRemainVal" style="font-weight: 800; color: var(--primary);">$400.00</span>
           </div>
         </div>
 
