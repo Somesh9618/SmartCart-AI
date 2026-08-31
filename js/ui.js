@@ -10,6 +10,7 @@ import { BRANDS_LIST } from './data.js';
 export class FashionUIController {
   constructor() {
     this.dom = {};
+    this.currentDynamicOutfit = null;
     this.initDOM();
     this.bindEvents();
     this.renderAll();
@@ -32,6 +33,7 @@ export class FashionUIController {
 
       // Cart
       cartBadge: document.getElementById("cartBadge"),
+      btnClearCart: document.getElementById("btnClearCart"),
       cartItemsList: document.getElementById("cartItemsList"),
       cartSubtotal: document.getElementById("cartSubtotal"),
       cartPromoRow: document.getElementById("cartPromoRow"),
@@ -106,7 +108,17 @@ export class FashionUIController {
       this.generateAndRenderFreshOutfit(style);
     });
 
-    // 6. Cart List Quantity Actions
+    // 6. Clear Wardrobe Cart Button
+    this.dom.btnClearCart?.addEventListener("click", () => {
+      if (store.cart.length === 0) {
+        this.showToast("Your wardrobe cart is already empty.", "info");
+        return;
+      }
+      store.clearCart();
+      this.showToast("Wardrobe cart cleared successfully!", "warning");
+    });
+
+    // 7. Cart List Quantity Actions
     this.dom.cartItemsList?.addEventListener("click", (e) => {
       const btn = e.target.closest(".btn-qty");
       if (!btn) return;
@@ -122,7 +134,7 @@ export class FashionUIController {
       }
     });
 
-    // 7. Agent Chat Submission
+    // 8. Agent Chat Submission
     const submitChat = () => {
       const val = this.dom.chatInput?.value.trim();
       if (!val) return;
@@ -135,7 +147,7 @@ export class FashionUIController {
       if (e.key === "Enter") submitChat();
     });
 
-    // 8. WebMCP Inspector Toggle
+    // 9. WebMCP Inspector Toggle
     this.dom.btnOpenInspector?.addEventListener("click", () => {
       this.dom.inspectorDrawer?.classList.add("open");
     });
@@ -155,7 +167,7 @@ export class FashionUIController {
       this.showToast("Fashion WebMCP JSON Manifest exported!");
     });
 
-    // 9. Human in the Loop Approval Actions
+    // 10. Human in the Loop Approval Actions
     this.dom.btnAuthorizeOrder?.addEventListener("click", () => {
       if (store.pendingApproval) {
         const token = store.pendingApproval.token;
@@ -239,7 +251,7 @@ export class FashionUIController {
         I recall your wardrobe profile:<br>
         • <strong>Saved Sizes:</strong> Shoe <code>${mem.preferredSizes.shoes}</code>, Top <code>${mem.preferredSizes.tops}</code>, Bottom <code>${mem.preferredSizes.bottoms}</code><br>
         • <strong>Favorite Brands:</strong> <em>${topBrands}</em><br><br>
-        Ask me anything like: <em>"Style a smart casual look for tonight"</em> or <em>"Find me white sneakers"</em>!
+        Ask me anything like: <em>"Style a smart casual look with Levi's and Nike"</em> or <em>"Find me running sneakers"</em>!
       `;
     } else {
       greetingHtml = `
@@ -256,14 +268,15 @@ export class FashionUIController {
     `;
   }
 
-  // Dynamic Outfit Generator & Showcase
+  // Dynamic Outfit Generator & Showcase with Master "Add Bundle" and Individual "Add Piece" buttons
   generateAndRenderFreshOutfit(style = "smart_casual") {
     if (!this.dom.dynamicOutfitContainer) return;
     const outfit = store.generateDynamicOutfit({ style });
+    this.currentDynamicOutfit = outfit;
 
     this.dom.dynamicOutfitContainer.innerHTML = `
-      <div class="dynamic-outfit-card glass-panel" style="padding: 1.25rem; border: 1px solid var(--border-active);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <div class="dynamic-outfit-card glass-panel" style="padding: 1.25rem; border: 1px solid var(--border-active); background: rgba(17, 24, 39, 0.85);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
           <div>
             <div style="font-size:0.7rem; font-weight:800; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.05em;">
               ⚡ Dynamic AI Algorithmic Combination
@@ -272,29 +285,37 @@ export class FashionUIController {
           </div>
           <div style="text-align:right;">
             <div style="font-size:0.75rem; color:var(--text-muted);">4-Piece Bundle:</div>
-            <div style="font-size:1.2rem; font-weight:800; color:var(--primary);">$${outfit.totalCost.toFixed(2)}</div>
+            <div style="font-size:1.25rem; font-weight:800; color:var(--primary);">$${outfit.totalCost.toFixed(2)}</div>
           </div>
         </div>
 
-        <div class="dynamic-pieces-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem; margin-bottom: 1rem;">
-          ${outfit.pieces.map(p => `
-            <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.6rem; display:flex; gap:0.6rem; align-items:center;">
-              <img src="${p.product.image}" alt="${p.product.name}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;" />
-              <div style="flex:1; overflow:hidden;">
-                <div style="font-size:0.65rem; color:var(--accent-cyan); font-weight:700;">${p.role}</div>
-                <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                  ${p.product.brand}
+        <div class="dynamic-pieces-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; margin-bottom: 1.15rem;">
+          ${outfit.pieces.map((p, idx) => `
+            <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.75rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem;">
+              <div style="display:flex; gap:0.6rem; align-items:center;">
+                <img src="${p.product.image}" alt="${p.product.name}" style="width:52px; height:52px; object-fit:cover; border-radius:6px;" />
+                <div style="flex:1; overflow:hidden;">
+                  <div style="font-size:0.65rem; color:var(--accent-cyan); font-weight:700; text-transform:uppercase;">${p.role}</div>
+                  <div style="font-size:0.825rem; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${p.product.brand}
+                  </div>
+                  <div style="font-size:0.75rem; color:var(--primary); font-weight:700;">$${p.product.price.toFixed(2)}</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted);">Size: <strong style="color:#fff;">${p.size}</strong></div>
                 </div>
-                <div style="font-size:0.7rem; color:var(--text-muted);">$${p.product.price.toFixed(2)} • Size: <strong style="color:#fff;">${p.size}</strong></div>
               </div>
+              <button class="btn btn-secondary" onclick="window.addSingleDynamicPiece('${p.product.id}', '${p.size}', '${p.color}')" style="width:100%; padding:0.3rem 0.5rem; font-size:0.72rem; display:flex; align-items:center; justify-content:center; gap:0.3rem;">
+                <span>+</span> Add This Piece
+              </button>
             </div>
           `).join('')}
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.75rem; color:var(--text-dim);">Sizes tailored to your AI wardrobe memory</span>
-          <button class="btn btn-primary" onclick="window.addDynamicOutfitBundle('${encodeURIComponent(JSON.stringify(outfit))}')" style="padding: 0.45rem 1rem; font-size: 0.825rem;">
-            🛒 Add All 4 Pieces to Wardrobe Cart
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border-subtle);">
+          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; color:var(--text-muted);">
+            <span>🧠</span> Sizes tailored to your AI wardrobe memory
+          </div>
+          <button id="btnAddOutfitBundle" class="btn btn-primary" onclick="window.addCurrentOutfitBundle()" style="padding: 0.6rem 1.25rem; font-size: 0.875rem; box-shadow: var(--shadow-glow-emerald);">
+            🛒 Add Complete 4-Piece Outfit to Cart ($${outfit.totalCost.toFixed(2)})
           </button>
         </div>
       </div>
@@ -518,17 +539,27 @@ export class FashionUIController {
   }
 }
 
+// Global UI helper hooks
 window.addToCartDirect = (productId) => {
   store.addToCart(productId, 1);
+  const prod = store.products.find(p => p.id === productId);
+  if (prod && window.smartCartUI) {
+    window.smartCartUI.showToast(`Added ${prod.brand} ${prod.name} to cart!`, "success");
+  }
 };
 
-window.addDynamicOutfitBundle = (outfitJson) => {
-  try {
-    const outfit = JSON.parse(decodeURIComponent(outfitJson));
-    store.addOutfitBundleToCart(outfit);
-    window.smartCartUI.showToast("All 4 outfit pieces added to your cart!", "success");
-  } catch (e) {
-    console.error("Failed to add outfit bundle:", e);
+window.addSingleDynamicPiece = (productId, size, color) => {
+  store.addToCart(productId, 1, size, color);
+  const prod = store.products.find(p => p.id === productId);
+  if (prod && window.smartCartUI) {
+    window.smartCartUI.showToast(`Added ${prod.brand} ${prod.name} (${size}) to cart!`, "success");
+  }
+};
+
+window.addCurrentOutfitBundle = () => {
+  if (window.smartCartUI && window.smartCartUI.currentDynamicOutfit) {
+    store.addOutfitBundleToCart(window.smartCartUI.currentDynamicOutfit);
+    window.smartCartUI.showToast(`All 4 outfit pieces added to your cart!`, "success");
   }
 };
 
