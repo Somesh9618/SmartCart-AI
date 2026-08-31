@@ -1,6 +1,6 @@
 /**
- * SmartCart AI - Fashion & Footwear Agent Reasoning Engine
- * 1-Click autonomous styling scenarios and natural language fashion concierge
+ * SmartCart Fashion AI - Memory-Aware Agent Reasoning Engine
+ * Dynamically generates unique outfit combinations and recalls user style memory
  */
 
 import { webMCP } from './webmcp.js';
@@ -33,24 +33,24 @@ export class FashionAgentEngine {
   getScenarios() {
     return [
       {
-        id: "scenario-smart-casual",
-        title: "Smart Casual Date Night Outfit",
-        badge: "Stylist & Outfit Assembler",
-        prompt: "Coordinate a sharp smart-casual evening outfit with a tailored linen shirt, stretch chinos, handcrafted leather Chelsea boots, and a matching leather belt. Apply the 20% fashion coupon and verify total budget.",
+        id: "scenario-dynamic-smart-casual",
+        title: "Dynamic Smart Casual Ensemble",
+        badge: "Memory-Aware Unique Styling",
+        prompt: "Generate a fresh, unique Smart Casual outfit matching my saved wardrobe sizes and favorite brands. Auto-assemble the 4 coordinated pieces into my cart, apply the 20% discount code, and summarize savings.",
         icon: "suit"
       },
       {
-        id: "scenario-athletic-running",
-        title: "High-Performance Running & Gym Set",
-        badge: "Sneakers & Activewear Set",
-        prompt: "Assemble a high-performance running set featuring the Apex CloudRunner Pro sneakers, seamless athletic training top, and compression leggings. Apply footwear discount and summarize savings.",
+        id: "scenario-dynamic-athletic",
+        title: "Dynamic Athletic & Sneaker Fit",
+        badge: "Multi-Brand Running Set",
+        prompt: "Generate a high-performance activewear set with premium running shoes, workout top, and joggers matching my profile. Apply the sneaker promo code.",
         icon: "running"
       },
       {
-        id: "scenario-streetwear-checkout",
-        title: "Autonomous Streetwear & Human Checkout",
+        id: "scenario-dynamic-streetwear",
+        title: "Autonomous Multi-Brand Streetwear & Checkout",
         badge: "Safety Guardrail Demo",
-        prompt: "Build an urban minimalist streetwear look under $250 with our heavyweight hoodie, selvedge denim, white leather court sneakers, and retro sunglasses. Optimize coupons and trigger the human approval checkout modal.",
+        prompt: "Style an urban streetwear outfit with heavy hoodie, selvedge denim, retro sneakers, and an accessory under $350. Apply coupon and initiate human-authorized checkout.",
         icon: "shield"
       }
     ];
@@ -62,12 +62,12 @@ export class FashionAgentEngine {
     this.emit("STATUS_CHANGE", { isBusy: true });
 
     try {
-      if (scenarioId === "scenario-smart-casual") {
-        await this.executeSmartCasualScenario();
-      } else if (scenarioId === "scenario-athletic-running") {
-        await this.executeAthleticRunningScenario();
-      } else if (scenarioId === "scenario-streetwear-checkout") {
-        await this.executeStreetwearCheckoutScenario();
+      if (scenarioId === "scenario-dynamic-smart-casual") {
+        await this.executeDynamicSmartCasual();
+      } else if (scenarioId === "scenario-dynamic-athletic") {
+        await this.executeDynamicAthletic();
+      } else if (scenarioId === "scenario-dynamic-streetwear") {
+        await this.executeDynamicStreetwear();
       }
     } catch (err) {
       console.error("Scenario execution error:", err);
@@ -86,139 +86,77 @@ export class FashionAgentEngine {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // --- SCENARIO 1: Smart Casual Date Night Outfit ---
-  async executeSmartCasualScenario() {
+  // --- SCENARIO 1: Dynamic Smart Casual (Memory-Aware) ---
+  async executeDynamicSmartCasual() {
     this.emit("AGENT_MESSAGE", {
       role: "user",
-      text: "Coordinate a sharp smart-casual evening outfit with a tailored linen shirt, stretch chinos, handcrafted leather Chelsea boots, and a matching leather belt. Apply the 20% fashion coupon and verify total budget."
+      text: "Generate a fresh, unique Smart Casual outfit matching my saved wardrobe sizes and favorite brands. Auto-assemble the 4 coordinated pieces into my cart, apply the 20% discount code, and summarize savings."
     });
 
     await this.sleep(700);
 
-    this.emit("AGENT_MESSAGE", {
-      role: "agent",
-      type: "thought",
-      text: "🧠 **Stylist Plan:**\n1. Query WebMCP for curated lookbook matching `style: 'Smart Casual'`.\n2. Add the complete 4-piece outfit (Linen shirt, Chinos, Chelsea boots, Belt) to cart with matched sizes.\n3. Apply promo code `FASHION20`.\n4. Calculate savings and price breakdown."
-    });
-
-    await this.sleep(900);
-
-    // Step 1: getOutfitSuggestions
-    this.emit("TOOL_CALL", { tool: "getOutfitSuggestions", args: { style: "Smart Casual", maxBudget: 350 } });
-    await this.sleep(800);
-    const outfitRes = await webMCP.executeTool("getOutfitSuggestions", { style: "Smart Casual", maxBudget: 350 });
-    this.emit("TOOL_RESULT", { tool: "getOutfitSuggestions", result: outfitRes });
-
-    await this.sleep(700);
-
-    const chosenOutfit = outfitRes.outfits[0];
-    this.emit("AGENT_MESSAGE", {
-      role: "agent",
-      type: "thought",
-      text: `✨ Selected **${chosenOutfit.name}** (4 coordinated pieces, Est. $${chosenOutfit.estimatedCost}). Now auto-assembling into wardrobe cart with size matching.`
-    });
-
+    // Step 1: Read user memory
+    this.emit("TOOL_CALL", { tool: "getUserStyleMemory", args: {} });
     await this.sleep(600);
-
-    // Step 2: addOutfitToCart
-    this.emit("TOOL_CALL", { tool: "addOutfitToCart", args: { outfitId: "outfit-02", shoeSize: "US 10", clothingSize: "M" } });
-    await this.sleep(900);
-    const addOutfitRes = await webMCP.executeTool("addOutfitToCart", { outfitId: "outfit-02", shoeSize: "US 10", clothingSize: "M" });
-    this.emit("TOOL_RESULT", { tool: "addOutfitToCart", result: addOutfitRes });
-
-    await this.sleep(700);
-
-    // Step 3: Apply Promo Code FASHION20
-    this.emit("TOOL_CALL", { tool: "applyPromoCode", args: { code: "FASHION20" } });
-    await this.sleep(800);
-    const promoRes = await webMCP.executeTool("applyPromoCode", { code: "FASHION20" });
-    this.emit("TOOL_RESULT", { tool: "applyPromoCode", result: promoRes });
-
-    await this.sleep(600);
-
-    const summary = store.getCartSummary();
-
-    this.emit("AGENT_MESSAGE", {
-      role: "agent",
-      type: "final",
-      text: `👔 **Smart Casual Look Assembled Perfectly!**\n\n` +
-            `• **Lookbook Set:** *${chosenOutfit.name}*\n` +
-            `• **Pieces Included:** Tailored Linen Shirt (Size M), Stretch Chinos (32x32), Heritage Chelsea Boots (US 10), Tuscan Leather Belt (34)\n` +
-            `• **Original Subtotal:** $${summary.subtotal}\n` +
-            `• **Fashion VIP Savings (FASHION20):** -$${summary.discountAmount} (20% OFF)\n` +
-            `• **Final Total (Free Courier Delivery):** **$${summary.total}** *(Budget Left: $${summary.remainingBudget})*\n\n` +
-            `Would you like me to trigger express checkout for you?`
-    });
-  }
-
-  // --- SCENARIO 2: High-Performance Running & Gym Set ---
-  async executeAthleticRunningScenario() {
-    this.emit("AGENT_MESSAGE", {
-      role: "user",
-      text: "Assemble a high-performance running set featuring the Apex CloudRunner Pro sneakers, seamless athletic training top, and compression leggings. Apply footwear discount and summarize savings."
-    });
-
-    await this.sleep(700);
-
-    this.emit("AGENT_MESSAGE", {
-      role: "agent",
-      type: "thought",
-      text: "🧠 **Performance Agent Plan:**\n1. Filter catalog for `athletic` activewear and performance footwear.\n2. Add Apex CloudRunner Pro Sneakers (Size US 9, Crimson Red).\n3. Add Pro-Breathe Training Top & Sculpt Compression Leggings.\n4. Apply promo code `FASHION20`.\n5. Verify fit and total order cost."
-    });
-
-    await this.sleep(800);
-
-    // Step 1: Filter
-    this.emit("TOOL_CALL", { tool: "filterCatalog", args: { category: "activewear", styles: ["athletic"] } });
-    await this.sleep(700);
-    await webMCP.executeTool("filterCatalog", { category: "activewear", styles: ["athletic"] });
+    const memRes = await webMCP.executeTool("getUserStyleMemory", {});
+    this.emit("TOOL_RESULT", { tool: "getUserStyleMemory", result: memRes });
 
     await this.sleep(500);
 
-    // Step 2: Add Sneakers
-    this.emit("TOOL_CALL", { tool: "addToCart", args: { productId: "shoe-01", quantity: 1, size: "US 9", color: "Crimson Red" } });
-    await this.sleep(600);
-    await webMCP.executeTool("addToCart", { productId: "shoe-01", quantity: 1, size: "US 9", color: "Crimson Red" });
+    const sizes = memRes.savedSizes;
+    const favBrands = memRes.favoriteBrands.slice(0, 3).join(", ") || "Ralph Lauren, Levi's";
 
-    // Step 3: Add Top
-    this.emit("TOOL_CALL", { tool: "addToCart", args: { productId: "top-05", quantity: 1, size: "M", color: "Electric Cyan" } });
-    await this.sleep(600);
-    await webMCP.executeTool("addToCart", { productId: "top-05", quantity: 1, size: "M", color: "Electric Cyan" });
+    this.emit("AGENT_MESSAGE", {
+      role: "agent",
+      type: "thought",
+      text: `🧠 **Stylist Memory Recall:**\n• Saved Sizes: Shoe \`${sizes.shoes}\`, Top \`${sizes.tops}\`, Bottom \`${sizes.bottoms}\`, Belt \`${sizes.accessories}\`\n• Preferred Brands: *${favBrands}*\n\nGenerating a brand-new unique combination tailored to your profile...`
+    });
 
-    // Step 4: Add Leggings
-    this.emit("TOOL_CALL", { tool: "addToCart", args: { productId: "bottom-03", quantity: 1, size: "M", color: "Matte Black" } });
-    await this.sleep(600);
-    await webMCP.executeTool("addToCart", { productId: "bottom-03", quantity: 1, size: "M", color: "Matte Black" });
+    await this.sleep(800);
+
+    // Step 2: Generate dynamic outfit
+    this.emit("TOOL_CALL", { tool: "generateDynamicOutfit", args: { style: "smart_casual", occasion: "Date Night & Evening", maxBudget: 400 } });
+    await this.sleep(900);
+    const outfitRes = await webMCP.executeTool("generateDynamicOutfit", { style: "smart_casual", occasion: "Date Night & Evening", maxBudget: 400 });
+    this.emit("TOOL_RESULT", { tool: "generateDynamicOutfit", result: outfitRes });
 
     await this.sleep(600);
 
-    // Step 5: Apply Promo
+    // Step 3: Add to cart
+    this.emit("TOOL_CALL", { tool: "addDynamicOutfitToCart", args: { style: "smart_casual", occasion: "Date Night & Evening" } });
+    await this.sleep(800);
+    await webMCP.executeTool("addDynamicOutfitToCart", { style: "smart_casual", occasion: "Date Night & Evening" });
+
+    await this.sleep(600);
+
+    // Step 4: Apply promo code
     this.emit("TOOL_CALL", { tool: "applyPromoCode", args: { code: "FASHION20" } });
     await this.sleep(700);
     const promoRes = await webMCP.executeTool("applyPromoCode", { code: "FASHION20" });
     this.emit("TOOL_RESULT", { tool: "applyPromoCode", result: promoRes });
 
-    await this.sleep(600);
+    await this.sleep(500);
 
     const summary = store.getCartSummary();
 
     this.emit("AGENT_MESSAGE", {
       role: "agent",
       type: "final",
-      text: `🏃‍♂️ **Performance Running Set Ready!**\n\n` +
-            `• **Apex CloudRunner Pro Sneakers:** Size US 9 (Crimson Red)\n` +
-            `• **Pro-Breathe Training Top:** Size M (Electric Cyan)\n` +
-            `• **Sculpt Compression Leggings:** Size M (Matte Black)\n` +
-            `• **Total Price:** **$${summary.total}** after -$${summary.discountAmount} discount (20% OFF)\n` +
-            `• **Free Shipping Qualified!**`
+      text: `✨ **Fresh Smart Casual Look Assembled!**\n\n` +
+            `• **Top:** ${outfitRes.pieces[0].brand} - ${outfitRes.pieces[0].name} (Size: \`${outfitRes.pieces[0].selectedSize}\`)\n` +
+            `• **Bottom:** ${outfitRes.pieces[1].brand} - ${outfitRes.pieces[1].name} (Size: \`${outfitRes.pieces[1].selectedSize}\`)\n` +
+            `• **Footwear:** ${outfitRes.pieces[2].brand} - ${outfitRes.pieces[2].name} (Size: \`${outfitRes.pieces[2].selectedSize}\`)\n` +
+            `• **Accessory:** ${outfitRes.pieces[3].brand} - ${outfitRes.pieces[3].name} (Size: \`${outfitRes.pieces[3].selectedSize}\`)\n\n` +
+            `🏷️ **Subtotal:** $${summary.subtotal} | **Promo Savings (FASHION20):** -$${summary.discountAmount} (20% OFF)\n` +
+            `🚚 **Final Total (Free Shipping):** **$${summary.total}** *(Budget Left: $${summary.remainingBudget})*`
     });
   }
 
-  // --- SCENARIO 3: Budget Streetwear Look + Human Checkout Guardrail ---
-  async executeStreetwearCheckoutScenario() {
+  // --- SCENARIO 2: Dynamic Athletic Set ---
+  async executeDynamicAthletic() {
     this.emit("AGENT_MESSAGE", {
       role: "user",
-      text: "Build an urban minimalist streetwear look under $250 with our heavyweight hoodie, selvedge denim, white leather court sneakers, and retro sunglasses. Optimize coupons and trigger the human approval checkout modal."
+      text: "Generate a high-performance activewear set with premium running shoes, workout top, and joggers matching my profile. Apply the sneaker promo code."
     });
 
     await this.sleep(700);
@@ -226,27 +164,81 @@ export class FashionAgentEngine {
     this.emit("AGENT_MESSAGE", {
       role: "agent",
       type: "thought",
-      text: "🧠 **Safety-First Stylist Plan:**\n1. Clear existing wardrobe cart.\n2. Set budget limit to $250.00.\n3. Add lookbook set `outfit-01` (Hoodie, Selvedge Denim, White Leather Court Sneakers, Sunglasses).\n4. Apply `FASHION20` discount.\n5. Call `requestCheckoutApproval` to invoke the **Human-in-the-Loop Security Guardrail**."
+      text: "🧠 **Performance Stylist Plan:**\n1. Query dynamic generator for `athletic` style with high rating priority (On Running / Nike / Lululemon).\n2. Load pieces matching user's stored athletic sizes.\n3. Apply `FASHION20` discount."
+    });
+
+    await this.sleep(800);
+
+    this.emit("TOOL_CALL", { tool: "generateDynamicOutfit", args: { style: "athletic", occasion: "Marathon & Gym Training", maxBudget: 450 } });
+    await this.sleep(900);
+    const outfitRes = await webMCP.executeTool("generateDynamicOutfit", { style: "athletic", occasion: "Marathon & Gym Training", maxBudget: 450 });
+    this.emit("TOOL_RESULT", { tool: "generateDynamicOutfit", result: outfitRes });
+
+    await this.sleep(600);
+
+    this.emit("TOOL_CALL", { tool: "addDynamicOutfitToCart", args: { style: "athletic", occasion: "Marathon & Gym Training" } });
+    await this.sleep(800);
+    await webMCP.executeTool("addDynamicOutfitToCart", { style: "athletic", occasion: "Marathon & Gym Training" });
+
+    await this.sleep(600);
+
+    this.emit("TOOL_CALL", { tool: "applyPromoCode", args: { code: "FASHION20" } });
+    await this.sleep(700);
+    await webMCP.executeTool("applyPromoCode", { code: "FASHION20" });
+
+    await this.sleep(500);
+
+    const summary = store.getCartSummary();
+
+    this.emit("AGENT_MESSAGE", {
+      role: "agent",
+      type: "final",
+      text: `🏃‍♂️ **High-Performance Athletic Kit Ready!**\n\n` +
+            `• **Running Shoes:** ${outfitRes.pieces[2].brand} - ${outfitRes.pieces[2].name} (${outfitRes.pieces[2].selectedSize})\n` +
+            `• **Workout Top:** ${outfitRes.pieces[0].brand} - ${outfitRes.pieces[0].name} (${outfitRes.pieces[0].selectedSize})\n` +
+            `• **Pants:** ${outfitRes.pieces[1].brand} - ${outfitRes.pieces[1].name} (${outfitRes.pieces[1].selectedSize})\n` +
+            `• **Accessory:** ${outfitRes.pieces[3].brand} - ${outfitRes.pieces[3].name}\n\n` +
+            `💰 **Total Cost:** **$${summary.total}** after 20% discount (-$${summary.discountAmount}).`
+    });
+  }
+
+  // --- SCENARIO 3: Dynamic Streetwear & Human Checkout ---
+  async executeDynamicStreetwear() {
+    this.emit("AGENT_MESSAGE", {
+      role: "user",
+      text: "Style an urban streetwear outfit with heavy hoodie, selvedge denim, retro sneakers, and an accessory under $350. Apply coupon and initiate human-authorized checkout."
+    });
+
+    await this.sleep(700);
+
+    this.emit("AGENT_MESSAGE", {
+      role: "agent",
+      type: "thought",
+      text: "🧠 **Safety-First Streetwear Stylist:**\n1. Clear previous cart.\n2. Generate fresh `streetwear` combination (Nike, Levi's, Carhartt, Adidas, Vans).\n3. Apply `FASHION20` coupon.\n4. Call `requestCheckoutApproval` to invoke the **Human-in-the-Loop Security Guardrail**."
     });
 
     await this.sleep(800);
 
     store.clearCart();
-    store.setBudgetLimit(250.00);
 
-    // Add Lookbook 1
-    this.emit("TOOL_CALL", { tool: "addOutfitToCart", args: { outfitId: "outfit-01", shoeSize: "US 10", clothingSize: "L" } });
+    this.emit("TOOL_CALL", { tool: "generateDynamicOutfit", args: { style: "streetwear", occasion: "Urban Weekend", maxBudget: 350 } });
     await this.sleep(900);
-    await webMCP.executeTool("addOutfitToCart", { outfitId: "outfit-01", shoeSize: "US 10", clothingSize: "L" });
+    const outfitRes = await webMCP.executeTool("generateDynamicOutfit", { style: "streetwear", occasion: "Urban Weekend", maxBudget: 350 });
+    this.emit("TOOL_RESULT", { tool: "generateDynamicOutfit", result: outfitRes });
 
     await this.sleep(600);
 
-    // Apply Coupon
-    this.emit("TOOL_CALL", { tool: "applyPromoCode", args: { code: "FASHION20" } });
+    this.emit("TOOL_CALL", { tool: "addDynamicOutfitToCart", args: { style: "streetwear" } });
     await this.sleep(700);
+    await webMCP.executeTool("addDynamicOutfitToCart", { style: "streetwear" });
+
+    await this.sleep(500);
+
+    this.emit("TOOL_CALL", { tool: "applyPromoCode", args: { code: "FASHION20" } });
+    await this.sleep(600);
     await webMCP.executeTool("applyPromoCode", { code: "FASHION20" });
 
-    await this.sleep(600);
+    await this.sleep(500);
 
     // Request Approval
     this.emit("TOOL_CALL", {
@@ -274,11 +266,10 @@ export class FashionAgentEngine {
       role: "agent",
       type: "approval_prompt",
       text: `🛡️ **Human Authorization Required (Safety Guardrail)**\n\n` +
-            `I have assembled your 4-piece streetwear look within your budget ceiling:\n` +
-            `• **Complete Set:** Heavyweight Hoodie (L), Selvedge Jeans (32x32), White Court Sneakers (US 10), Retro Sunglasses\n` +
-            `• **Total Authorized Cost:** **$${approvalRes.orderSummary.total}** *(Under budget by $${approvalRes.orderSummary.remainingBudget})*\n` +
-            `• **Destination:** Penthouse 4B, 500 Howard St, San Francisco, CA\n` +
-            `• **Security Token:** \`${approvalRes.approvalToken}\`\n\n` +
+            `I have assembled a unique multi-brand streetwear look within your budget ceiling:\n` +
+            `• **Ensemble:** ${outfitRes.pieces.map(p => `${p.brand} ${p.name}`).join(" + ")}\n` +
+            `• **Total Authorized Amount:** **$${approvalRes.orderSummary.total}** *(Under budget by $${approvalRes.orderSummary.remainingBudget})*\n` +
+            `• **Security Authorization Token:** \`${approvalRes.approvalToken}\`\n\n` +
             `👉 **Please review the on-screen Checkout Security Modal and click 'Authorize & Place Order' to confirm!**`
     });
   }
@@ -295,10 +286,69 @@ export class FashionAgentEngine {
     try {
       const lower = userText.toLowerCase();
 
+      // Memory check or size update
+      if (lower.includes("my size") || lower.includes("memory") || lower.includes("preferences") || lower.includes("profile")) {
+        this.emit("TOOL_CALL", { tool: "getUserStyleMemory", args: {} });
+        await this.sleep(500);
+        const res = await webMCP.executeTool("getUserStyleMemory", {});
+        this.emit("TOOL_RESULT", { tool: "getUserStyleMemory", result: res });
+        await this.sleep(400);
+
+        this.emit("AGENT_MESSAGE", {
+          role: "agent",
+          type: "final",
+          text: `🧠 **Your Saved Wardrobe Memory Profile:**\n\n` +
+                `• **Shoe Size:** \`${res.savedSizes.shoes}\`\n` +
+                `• **Top / Shirt Size:** \`${res.savedSizes.tops}\`\n` +
+                `• **Pants / Denim Size:** \`${res.savedSizes.bottoms}\`\n` +
+                `• **Belt Size:** \`${res.savedSizes.accessories}\`\n` +
+                `• **Favorite Brands:** ${res.favoriteBrands.join(", ") || "Nike, Levi's, Ralph Lauren"}\n\n` +
+                `I automatically use these sizes whenever generating outfits for you!`
+        });
+        return;
+      }
+
+      // Generate outfit
+      if (lower.includes("outfit") || lower.includes("look") || lower.includes("style me") || lower.includes("combine") || lower.includes("recommend")) {
+        const style = lower.includes("street") ? "streetwear" : lower.includes("athletic") || lower.includes("gym") || lower.includes("running") ? "athletic" : lower.includes("formal") ? "formal" : "smart_casual";
+        
+        let preferredBrand = null;
+        for (const brand of ["Nike", "Adidas", "Levi's", "Ralph Lauren", "Zara", "Patagonia", "Fossil", "Timberland", "Lululemon"]) {
+          if (lower.includes(brand.toLowerCase())) {
+            preferredBrand = brand;
+            break;
+          }
+        }
+
+        this.emit("TOOL_CALL", { tool: "generateDynamicOutfit", args: { style, preferredBrand } });
+        await this.sleep(700);
+        const outfit = await webMCP.executeTool("generateDynamicOutfit", { style, preferredBrand });
+        this.emit("TOOL_RESULT", { tool: "generateDynamicOutfit", result: outfit });
+        await this.sleep(500);
+
+        this.emit("TOOL_CALL", { tool: "addDynamicOutfitToCart", args: { style, preferredBrand } });
+        await this.sleep(700);
+        await webMCP.executeTool("addDynamicOutfitToCart", { style, preferredBrand });
+
+        const summary = store.getCartSummary();
+
+        this.emit("AGENT_MESSAGE", {
+          role: "agent",
+          type: "final",
+          text: `✨ I dynamically styled a unique **${outfit.style.replace('_', ' ').toUpperCase()}** combination for you:\n\n` +
+                `1. **${outfit.pieces[0].brand}** - ${outfit.pieces[0].name} (Size: \`${outfit.pieces[0].selectedSize}\`)\n` +
+                `2. **${outfit.pieces[1].brand}** - ${outfit.pieces[1].name} (Size: \`${outfit.pieces[1].selectedSize}\`)\n` +
+                `3. **${outfit.pieces[2].brand}** - ${outfit.pieces[2].name} (Size: \`${outfit.pieces[2].selectedSize}\`)\n` +
+                `4. **${outfit.pieces[3].brand}** - ${outfit.pieces[3].name} (Size: \`${outfit.pieces[3].selectedSize}\`)\n\n` +
+                `All 4 pieces have been added to your cart with your saved sizes. Total is **$${summary.total}**.`
+        });
+        return;
+      }
+
       // Clear cart
       if (lower.includes("clear") && lower.includes("cart")) {
         store.clearCart();
-        this.emit("AGENT_MESSAGE", { role: "agent", type: "final", text: "🛍️ I've cleared your wardrobe shopping cart." });
+        this.emit("AGENT_MESSAGE", { role: "agent", type: "final", text: "🛍️ I've emptied your wardrobe cart." });
         return;
       }
 
@@ -321,9 +371,9 @@ export class FashionAgentEngine {
 
       // Checkout
       if (lower.includes("checkout") || lower.includes("place order") || lower.includes("buy")) {
-        this.emit("TOOL_CALL", { tool: "requestCheckoutApproval", args: { deliveryAddress: "User Home Address", paymentMethod: "Credit Card" } });
+        this.emit("TOOL_CALL", { tool: "requestCheckoutApproval", args: { deliveryAddress: "User Home Address" } });
         await this.sleep(700);
-        const res = await webMCP.executeTool("requestCheckoutApproval", { deliveryAddress: "User Home Address", paymentMethod: "Credit Card" });
+        const res = await webMCP.executeTool("requestCheckoutApproval", { deliveryAddress: "User Home Address" });
         this.emit("TOOL_RESULT", { tool: "requestCheckoutApproval", result: res });
         await this.sleep(400);
 
@@ -332,28 +382,6 @@ export class FashionAgentEngine {
           type: "approval_prompt",
           text: `🛡️ **Checkout Authorization Triggered**\nTotal: **$${res.orderSummary.total}**. Please click 'Authorize Order' in the modal on your screen.`
         });
-        return;
-      }
-
-      // Outfit suggestions
-      if (lower.includes("outfit") || lower.includes("look") || lower.includes("style")) {
-        const style = lower.includes("street") ? "Streetwear" : lower.includes("athletic") || lower.includes("running") ? "Athletic" : "Smart Casual";
-        this.emit("TOOL_CALL", { tool: "getOutfitSuggestions", args: { style, maxBudget: 350 } });
-        await this.sleep(600);
-        const res = await webMCP.executeTool("getOutfitSuggestions", { style, maxBudget: 350 });
-        this.emit("TOOL_RESULT", { tool: "getOutfitSuggestions", result: res });
-        await this.sleep(400);
-
-        if (res.outfits.length > 0) {
-          const top = res.outfits[0];
-          this.emit("AGENT_MESSAGE", {
-            role: "agent",
-            type: "final",
-            text: `✨ I styled **${top.name}** (${top.style}, ${top.piecesCount} coordinated pieces, Est. $${top.estimatedCost}).\n\n` +
-                  `${top.description}\n\n` +
-                  `Would you like me to add this full look to your cart?`
-          });
-        }
         return;
       }
 
@@ -375,14 +403,14 @@ export class FashionAgentEngine {
         this.emit("AGENT_MESSAGE", {
           role: "agent",
           type: "final",
-          text: `🛍️ Found **${first.name}** ($${first.price.toFixed(2)}, Size: ${size}) and added it to your wardrobe cart.\n\n` +
+          text: `🛍️ Found **${first.brand} ${first.name}** ($${first.price.toFixed(2)}, Size: ${size}) and added it to your wardrobe cart.\n\n` +
                 `Cart Total is now **$${cart.total}** (${cart.totalItems} items).`
         });
       } else {
         this.emit("AGENT_MESSAGE", {
           role: "agent",
           type: "final",
-          text: `I searched our fashion collection for "${userText}", but couldn't find an exact match. Try searching for sneakers, boots, denim, hoodies, or linen shirts!`
+          text: `I searched our 44+ product collection for "${userText}", but couldn't find an exact match. Try asking: "Style a casual look with Nike sneakers and Levi's jeans" or search for brands like Ralph Lauren, Adidas, Fossil, or Zara!`
         });
       }
 

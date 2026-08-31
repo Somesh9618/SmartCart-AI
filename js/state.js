@@ -1,29 +1,33 @@
 /**
- * SmartCart AI - Fashion & Footwear Reactive State Store
- * Centralized state management for apparel, shoes, outfit bundles, and WebMCP telemetry
+ * SmartCart Fashion AI - State Store with User Wardrobe Memory
+ * Dynamic Outfit Combination Engine & Persistent Style History
  */
 
-import { INITIAL_PRODUCTS, CURATED_OUTFITS, PROMO_CODES } from './data.js';
+import { INITIAL_PRODUCTS, BRANDS_LIST, PROMO_CODES } from './data.js';
 
 class FashionStateStore {
   constructor() {
     this.products = [...INITIAL_PRODUCTS];
-    this.outfits = [...CURATED_OUTFITS];
+    this.brandsList = [...BRANDS_LIST];
     this.promoCodes = { ...PROMO_CODES };
 
-    // Shopping Cart State (Items have productId, quantity, selectedSize, selectedColor)
+    // Shopping Cart State
     this.cart = [];
     this.appliedPromo = null;
-    this.budgetLimit = 300.00; // default $300 budget for fashion/outfits
+    this.budgetLimit = 400.00; // default $400 budget
 
     // Catalog Filter State
     this.filters = {
       searchQuery: "",
-      category: "all", // 'all', 'footwear', 'tops', 'bottoms', 'activewear', 'accessories'
+      category: "all", // 'all', 'tops', 'bottoms', 'footwear', 'accessories'
+      brand: "all",    // 'all' or brand name
       styles: [],      // ['streetwear', 'smart_casual', 'athletic', 'sustainable', 'formal']
-      maxPrice: 200,
+      maxPrice: 300,
       sortBy: "popular" // 'popular', 'price-low', 'price-high', 'rating'
     };
+
+    // User Wardrobe Memory (Loaded from localStorage)
+    this.memory = this.loadMemory();
 
     // Human-in-the-Loop Approval State
     this.pendingApproval = null;
@@ -36,37 +40,166 @@ class FashionStateStore {
     this.listeners = new Set();
   }
 
-  // Subscribe to state changes
-  subscribe(listener) {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+  // --- MEMORY PERSISTENCE ---
+  loadMemory() {
+    try {
+      const saved = localStorage.getItem("smartcart_wardrobe_memory");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn("Could not load wardrobe memory:", e);
+    }
+
+    return {
+      userId: "user-fashion-01",
+      preferredSizes: {
+        tops: "L",
+        bottoms: "32x32",
+        shoes: "US 10",
+        accessories: "34"
+      },
+      favoriteBrands: ["Nike", "Levi's", "Ralph Lauren"],
+      preferredStyles: ["smart_casual", "streetwear"],
+      pastSelections: [],
+      generatedOutfitHistory: []
+    };
   }
 
-  notify(eventType, payload) {
-    for (const listener of this.listeners) {
-      try {
-        listener(eventType, payload, this);
-      } catch (err) {
-        console.error("Error in state subscriber:", err);
-      }
+  saveMemory() {
+    try {
+      localStorage.setItem("smartcart_wardrobe_memory", JSON.stringify(this.memory));
+      this.notify("MEMORY_UPDATED", this.memory);
+    } catch (e) {
+      console.error("Could not save wardrobe memory:", e);
     }
   }
 
-  // --- CATALOG METHODS ---
+  updateMemoryPreferences({ sizes, brands, styles }) {
+    if (sizes) this.memory.preferredSizes = { ...this.memory.preferredSizes, ...sizes };
+    if (brands) this.memory.favoriteBrands = Array.from(new Set([...brands]));
+    if (styles) this.memory.preferredStyles = Array.from(new Set([...styles]));
+    this.saveMemory();
+    return this.memory;
+  }
+
+  recordSelection(product) {
+    if (!product) return;
+    this.memory.pastSelections.unshift({
+      productId: product.id,
+      brand: product.brand,
+      name: product.name,
+      category: product.category,
+      timestamp: Date.now()
+    });
+    if (this.memory.pastSelections.length > 30) this.memory.pastSelections.pop();
+
+    // Auto-learn favorite brands
+    if (product.brand && !this.memory.favoriteBrands.includes(product.brand)) {
+      this.memory.favoriteBrands.push(product.brand);
+      if (this.memory.favoriteBrands.length > 5) this.memory.favoriteBrands.shift();
+    }
+
+    this.saveMemory();
+  }
+
+  clearMemory() {
+    this.memory = {
+      userId: "user-fashion-01",
+      preferredSizes: { tops: "L", bottoms: "32x32", shoes: "US 10", accessories: "34" },
+      favoriteBrands: [],
+      preferredStyles: ["smart_casual"],
+      pastSelections: [],
+      generatedOutfitHistory: []
+    };
+    this.saveMemory();
+  }
+
+  // --- DYNAMIC OUTFIT GENERATION (Unique Combinations) ---
+  generateDynamicOutfit({ style = "smart_casual", occasion = "General", maxBudget = 400, preferredBrand = null, excludeIds = [] }) {
+    const tops = this.products.filter(p => p.category === "tops");
+    const bottoms = this.products.filter(p => p.category === "bottoms");
+    const shoes = this.products.filter(p => p.category === "footwear");
+    const accessories = this.products.filter(p => p.category === "accessories");
+
+    // Helper to score and pick best matching item
+    const pickItem = (items, category) => {
+      const candidates = items.filter(item => !excludeIds.includes(item.id));
+      if (candidates.length === 0) return items[Math.floor(Math.random() * items.length)];
+
+      // Rank by style match, brand preference, rating, and randomness for freshness
+      const scored = candidates.map(item => {
+        let score = Math.random() * 2; // base entropy for fresh unique picks
+        if (item.styles.includes(style)) score += 4;
+        if (preferredBrand && item.brand.toLowerCase() === preferredBrand.toLowerCase()) score += 5;
+        if (this.memory.favoriteBrands.includes(item.brand)) score += 2;
+        score += item.rating;
+        return { item, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      return scored[0].item;
+    };
+
+    const selectedTop = pickItem(tops, "tops");
+    const selectedBottom = pickItem(bottoms, "bottoms");
+    const selectedShoe = pickItem(shoes, "footwear");
+    const selectedAccessory = pickItem(accessories, "accessories");
+
+    const totalCost = Number((selectedTop.price + selectedBottom.price + selectedShoe.price + selectedAccessory.price).toFixed(2));
+
+    // Resolve size from user memory or item defaults
+    const topSize = this.memory.preferredSizes.tops || (selectedTop.sizes ? selectedTop.sizes[0] : "L");
+    const bottomSize = this.memory.preferredSizes.bottoms || (selectedBottom.sizes ? selectedBottom.sizes[0] : "32x32");
+    const shoeSize = this.memory.preferredSizes.shoes || (selectedShoe.sizes ? selectedShoe.sizes[0] : "US 10");
+    const accSize = this.memory.preferredSizes.accessories || (selectedAccessory.sizes ? selectedAccessory.sizes[0] : "34");
+
+    const outfit = {
+      id: "outfit-dyn-" + Date.now().toString(36),
+      title: `${style.replace('_', ' ').toUpperCase()} Lookbook: ${selectedTop.brand} & ${selectedShoe.brand}`,
+      style: style,
+      occasion: occasion,
+      totalCost: totalCost,
+      pieces: [
+        { product: selectedTop, size: topSize, color: selectedTop.colors[0], role: "Top / Shirt" },
+        { product: selectedBottom, size: bottomSize, color: selectedBottom.colors[0], role: "Pants / Jeans" },
+        { product: selectedShoe, size: shoeSize, color: selectedShoe.colors[0], role: "Footwear / Shoes" },
+        { product: selectedAccessory, size: accSize, color: selectedAccessory.colors[0], role: "Belt / Accessory" }
+      ]
+    };
+
+    this.memory.generatedOutfitHistory.unshift({
+      id: outfit.id,
+      title: outfit.title,
+      cost: outfit.totalCost,
+      timestamp: Date.now()
+    });
+    if (this.memory.generatedOutfitHistory.length > 10) this.memory.generatedOutfitHistory.pop();
+    this.saveMemory();
+
+    return outfit;
+  }
+
+  // --- CATALOG FILTERING ---
   getFilteredProducts() {
     return this.products.filter(item => {
       // Search Query
       if (this.filters.searchQuery) {
-        const query = this.filters.searchQuery.toLowerCase();
-        const matchesName = item.name.toLowerCase().includes(query);
-        const matchesDesc = item.description.toLowerCase().includes(query);
-        const matchesCat = item.category.toLowerCase().includes(query);
-        const matchesMat = item.material.toLowerCase().includes(query);
-        if (!matchesName && !matchesDesc && !matchesCat && !matchesMat) return false;
+        const q = this.filters.searchQuery.toLowerCase();
+        const matches = item.name.toLowerCase().includes(q) ||
+                        item.brand.toLowerCase().includes(q) ||
+                        item.description.toLowerCase().includes(q) ||
+                        item.category.toLowerCase().includes(q);
+        if (!matches) return false;
       }
 
       // Category
       if (this.filters.category !== "all" && item.category !== this.filters.category) {
+        return false;
+      }
+
+      // Brand
+      if (this.filters.brand !== "all" && item.brand.toLowerCase() !== this.filters.brand.toLowerCase()) {
         return false;
       }
 
@@ -75,10 +208,10 @@ class FashionStateStore {
         return false;
       }
 
-      // Style Filters
+      // Style
       if (this.filters.styles.length > 0) {
-        const hasMatch = this.filters.styles.some(s => item.styles.includes(s));
-        if (!hasMatch) return false;
+        const hasStyle = this.filters.styles.some(s => item.styles.includes(s));
+        if (!hasStyle) return false;
       }
 
       return true;
@@ -86,7 +219,7 @@ class FashionStateStore {
       if (this.filters.sortBy === "price-low") return a.price - b.price;
       if (this.filters.sortBy === "price-high") return b.price - a.price;
       if (this.filters.sortBy === "rating") return b.rating - a.rating;
-      return b.reviews - a.reviews; // default popular
+      return b.reviews - a.reviews;
     });
   }
 
@@ -99,34 +232,28 @@ class FashionStateStore {
     this.filters = {
       searchQuery: "",
       category: "all",
+      brand: "all",
       styles: [],
-      maxPrice: 200,
+      maxPrice: 300,
       sortBy: "popular"
     };
     this.notify("FILTERS_CHANGED", this.filters);
   }
 
-  // --- CART METHODS ---
+  // --- CART OPERATIONS ---
   addToCart(productId, quantity = 1, selectedSize = null, selectedColor = null) {
     const product = this.products.find(p => p.id === productId);
-    if (!product) {
-      throw new Error(`Product with ID "${productId}" not found in catalog.`);
-    }
-
-    if (product.stock < quantity) {
-      throw new Error(`Only ${product.stock} units available for ${product.name}.`);
-    }
+    if (!product) throw new Error(`Product ${productId} not found.`);
 
     const size = selectedSize || (product.sizes ? product.sizes[0] : "Standard");
     const color = selectedColor || (product.colors ? product.colors[0] : "Standard");
 
-    // Match by product ID AND selected size/color
-    const existingIndex = this.cart.findIndex(
-      item => item.product.id === productId && item.selectedSize === size && item.selectedColor === color
+    const existing = this.cart.find(
+      i => i.product.id === productId && i.selectedSize === size && i.selectedColor === color
     );
 
-    if (existingIndex > -1) {
-      this.cart[existingIndex].quantity += quantity;
+    if (existing) {
+      existing.quantity += quantity;
     } else {
       this.cart.push({
         product: { ...product },
@@ -136,21 +263,25 @@ class FashionStateStore {
       });
     }
 
-    this.notify("CART_UPDATED", { action: "ADD", product, quantity, size, color });
+    this.recordSelection(product);
+    this.notify("CART_UPDATED", { action: "ADD", product });
+    return this.getCartSummary();
+  }
+
+  addOutfitBundleToCart(outfit) {
+    for (const piece of outfit.pieces) {
+      this.addToCart(piece.product.id, 1, piece.size, piece.color);
+    }
     return this.getCartSummary();
   }
 
   updateCartQuantity(cartIndex, quantity) {
-    if (cartIndex < 0 || cartIndex >= this.cart.length) {
-      throw new Error(`Invalid cart item index.`);
-    }
-
+    if (cartIndex < 0 || cartIndex >= this.cart.length) return this.getCartSummary();
     if (quantity <= 0) {
       this.cart.splice(cartIndex, 1);
     } else {
       this.cart[cartIndex].quantity = quantity;
     }
-
     this.notify("CART_UPDATED", { action: "UPDATE_QTY" });
     return this.getCartSummary();
   }
@@ -174,9 +305,8 @@ class FashionStateStore {
     const cleanCode = code.trim().toUpperCase();
     const promo = this.promoCodes[cleanCode];
     if (!promo) {
-      throw new Error(`Invalid promo code: "${code}". Try "FASHION20" for 20% off or "SNEAKER10".`);
+      throw new Error(`Invalid promo code: "${code}". Try "FASHION20" for 20% off.`);
     }
-
     this.appliedPromo = promo;
     this.notify("PROMO_APPLIED", promo);
     return {
@@ -192,14 +322,12 @@ class FashionStateStore {
     this.notify("BUDGET_CHANGED", this.budgetLimit);
   }
 
-  // --- AGGREGATED CALCULATIONS ---
   getCartSummary() {
     let subtotal = 0;
     let totalItems = 0;
 
     for (const item of this.cart) {
-      const linePrice = item.product.price * item.quantity;
-      subtotal += linePrice;
+      subtotal += item.product.price * item.quantity;
       totalItems += item.quantity;
     }
 
@@ -212,8 +340,8 @@ class FashionStateStore {
       }
     }
 
-    const estimatedTax = (subtotal - discountAmount) * 0.0825; // 8.25% sales tax
-    const deliveryFee = subtotal > 75 ? 0 : 9.99; // Free shipping over $75
+    const estimatedTax = (subtotal - discountAmount) * 0.0825;
+    const deliveryFee = subtotal > 75 ? 0 : 9.99;
     const total = Math.max(0, subtotal - discountAmount + estimatedTax + deliveryFee);
     const remainingBudget = this.budgetLimit - total;
 
@@ -221,6 +349,7 @@ class FashionStateStore {
       items: this.cart.map((item, idx) => ({
         index: idx,
         id: item.product.id,
+        brand: item.product.brand,
         name: item.product.name,
         price: item.product.price,
         size: item.selectedSize,
@@ -241,7 +370,7 @@ class FashionStateStore {
     };
   }
 
-  // --- WEBMCP LOGGING & TELEMETRY ---
+  // --- TELEMETRY ---
   logMcpCall(toolCall) {
     const entry = {
       id: "call-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4),
@@ -250,7 +379,7 @@ class FashionStateStore {
       params: toolCall.params,
       result: toolCall.result,
       error: toolCall.error || null,
-      durationMs: toolCall.durationMs || 10
+      durationMs: toolCall.durationMs || 12
     };
     this.mcpLogs.unshift(entry);
     if (this.mcpLogs.length > 50) this.mcpLogs.pop();
@@ -258,7 +387,7 @@ class FashionStateStore {
     return entry;
   }
 
-  // --- HUMAN IN THE LOOP APPROVALS ---
+  // --- APPROVALS ---
   createPendingApproval(orderData) {
     const token = "AUTH-" + Math.random().toString(36).substring(2, 9).toUpperCase();
     this.pendingApproval = {
@@ -293,6 +422,21 @@ class FashionStateStore {
   rejectPendingApproval() {
     this.pendingApproval = null;
     this.notify("APPROVAL_REJECTED", null);
+  }
+
+  subscribe(listener) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  notify(eventType, payload) {
+    for (const listener of this.listeners) {
+      try {
+        listener(eventType, payload, this);
+      } catch (err) {
+        console.error("State listener error:", err);
+      }
+    }
   }
 }
 
