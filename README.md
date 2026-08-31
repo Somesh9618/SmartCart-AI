@@ -1,7 +1,10 @@
 # 👔 SmartCart Fashion AI — Multi-Brand Clothes, Shoes & Dynamic Outfit Concierge
 ### Built for the WebMCP Challenge Hackathon
 
-> **SmartCart Fashion AI** is an agent-native multi-brand fashion concierge featuring **44+ products across global brands** (Nike, Ralph Lauren, Levi's, Adidas, Fossil, Timberland, Zara, Patagonia, Lululemon), **dynamic unique outfit generation**, and **persistent User Wardrobe Memory** built on the open **WebMCP standard** (`document.modelContext`).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![WebMCP Standard](https://img.shields.io/badge/WebMCP-1.2.0%20Standard-emerald)](https://github.com/Somesh9618/SmartCart-AI)
+
+> **SmartCart Fashion AI** is an agent-native multi-brand fashion concierge featuring **44+ products across global brands** (Nike, Ralph Lauren, Levi's, Adidas, Fossil, Timberland, Zara, Patagonia, Lululemon), **dynamic unique outfit generation**, and **persistent User Wardrobe Memory** built strictly on the open **WebMCP standard** (`document.modelContext.registerTool`).
 
 ---
 
@@ -29,16 +32,39 @@
 
 ---
 
-## 🛠️ WebMCP Tools Specification
+## 🛠️ Official WebMCP Protocol Implementation
 
-SmartCart Fashion AI exposes the following tools on `document.modelContext` / `window.modelContext`:
+SmartCart Fashion AI implements the official hackathon standard via `document.modelContext.registerTool`:
+
+```javascript
+document.modelContext.registerTool({
+  name: "search_products",
+  description: "Search 44+ multi-brand clothes, sneakers, jackets, bottoms, and accessories with brand, category, style, and price filters.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Search keyword" },
+      brand: { type: "string", description: "Filter by brand name" },
+      category: { type: "string", enum: ["all", "tops", "bottoms", "footwear", "accessories"] },
+      maxPrice: { type: "number", description: "Max price per item in USD" },
+      styles: { type: "array", items: { type: "string" }, description: "Style aesthetics" }
+    }
+  },
+  execute: async (input) => {
+    // Queries in-memory catalog with active filters
+    return results;
+  }
+});
+```
+
+### Complete Registered WebMCP Tools
 
 | Tool Name | Purpose | Key Parameters |
 | :--- | :--- | :--- |
+| `search_products` / `searchCatalog` | Search 44+ clothes, sneakers, and accessories with brand/style filters | `query`, `brand`, `category`, `maxPrice`, `styles` |
 | `generateDynamicOutfit` | Algorithmically creates unique 4-piece outfit matching style & memory | `style`, `occasion`, `preferredBrand`, `maxBudget` |
 | `getUserStyleMemory` | Retrieves user's saved sizes, favorite brands, and past picks | *(None)* |
 | `updateStyleMemory` | Updates saved sizes (shoe, top, bottom, belt) or brand preferences | `sizes`, `favoriteBrands`, `preferredStyles` |
-| `searchCatalog` | Search 44+ clothes, sneakers, and accessories with brand/style filters | `query`, `brand`, `category`, `maxPrice`, `styles` |
 | `filterCatalog` | Update active storefront view & brand filtering | `brand`, `category`, `maxPrice`, `styles`, `sortBy` |
 | `addToCart` | Adds an item with exact size and color options | `productId`, `quantity`, `size`, `color` |
 | `addDynamicOutfitToCart` | Generates a fresh outfit and adds all 4 matching pieces to cart | `style`, `occasion`, `preferredBrand` |
@@ -52,8 +78,11 @@ SmartCart Fashion AI exposes the following tools on `document.modelContext` / `w
 ## 🚀 How to Run Locally
 
 ```bash
+# Clone the repository
+git clone https://github.com/Somesh9618/SmartCart-AI.git
+
 # Navigate to the project directory
-cd smartcart-ai
+cd SmartCart-AI
 
 # Start a lightweight local server
 npx -y serve .
@@ -62,22 +91,5 @@ Then open `http://localhost:3000` in your browser.
 
 ---
 
-## 🎬 Video Demo Pitch Script (2 Minutes)
-
-* **0:00 - 0:25 (The Problem):**
-  > *"When AI agents try to shop for clothes online today, they struggle with size selection, brand matching, and coordinate guessing. WebMCP fixes this by giving websites a direct, structured tool API under `document.modelContext`."*
-
-* **0:25 - 0:50 (Introducing SmartCart Fashion AI):**
-  > *"Meet SmartCart Fashion AI—the multi-brand wardrobe concierge with 44+ products from Nike, Levi's, Ralph Lauren, Adidas, Fossil, and Zara. It features dynamic outfit generation and persistent AI wardrobe memory."*
-
-* **0:50 - 1:25 (Live Styling & Memory Demo):**
-  > *"When I open chat and ask 'Style a smart casual look with Levi's and Nike', watch the agent query `getUserStyleMemory` to recall my shoe size (US 10) and shirt size (L), run `generateDynamicOutfit` to dynamically combine a Ralph Lauren shirt, Levi's selvedge jeans, Adidas Sambas, and Fossil leather belt, apply promo code `FASHION20`, and assemble all 4 pieces live on screen!"*
-
-* **1:25 - 1:45 (WebMCP Inspector & Human-in-the-Loop):**
-  > *"Judges can open the WebMCP Live Inspector to see raw JSON inputs, outputs, and sub-15ms execution logs. And notice our safety guardrail: the agent invokes `requestCheckoutApproval`, presenting a security modal for explicit human authorization."*
-
-* **1:45 - 2:00 (Conclusion):**
-  > *"SmartCart Fashion AI shows how WebMCP turns multi-brand e-commerce into a smart, personalized, agent-native experience. Thank you!"*
-
----
-*Built with ❤️ for the WebMCP Challenge.*
+## 📄 Open Source License
+This project is open-source under the [MIT License](LICENSE).
