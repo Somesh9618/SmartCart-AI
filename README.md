@@ -1,9 +1,6 @@
 # 👔 SmartCart Fashion AI — Multi-Brand Clothes, Shoes & Dynamic Outfit Concierge
 ### Built for the WebMCP Challenge Hackathon
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![WebMCP Standard](https://img.shields.io/badge/WebMCP-1.2.0%20Standard-emerald)](https://github.com/Somesh9618/SmartCart-AI)
-
 > **SmartCart Fashion AI** is an agent-native multi-brand fashion concierge featuring **44+ products across global brands** (Nike, Ralph Lauren, Levi's, Adidas, Fossil, Timberland, Zara, Patagonia, Lululemon), **dynamic unique outfit generation**, and **persistent User Wardrobe Memory** built strictly on the open **WebMCP standard** (`document.modelContext.registerTool`).
 
 ---
@@ -91,5 +88,3 @@ Then open `http://localhost:3000` in your browser.
 
 ---
 
-## 📄 Open Source License
-This project is open-source under the [MIT License](LICENSE).
