@@ -275,7 +275,7 @@
         <span style="font-size:1.2rem;">⚡</span>
         <div>
           <div style="font-weight:700; font-family:var(--font-display);">WebMCP Live Inspector</div>
-          <div style="font-size:0.7rem; color:var(--accent-cyan);">Multi-Brand document.modelContext Telemetry</div>
+          <div style="font-size:0.7rem; color:var(--accent-cyan);">document.modelContext DevTools</div>
         </div>
       </div>
       <div style="display:flex; gap:0.5rem;">
@@ -288,9 +288,24 @@
       </div>
     </div>
 
-    <!-- Telemetry Log Stream -->
-    <div class="inspector-logs-stream" id="mcpLogsStream">
-      <!-- Dynamically Rendered by ui.js -->
+    <!-- Inspector Navigation Tabs -->
+    <div class="inspector-tabs" id="inspectorTabs" style="display:flex; border-bottom:1px solid var(--border-subtle); background:var(--bg-surface);">
+      <button class="inspector-tab active" id="tabBtnTools" data-tab="tools" style="flex:1; padding:0.65rem 0.5rem; background:transparent; border:none; border-bottom:2px solid var(--accent-cyan); color:var(--accent-cyan); font-weight:700; font-size:0.8rem; cursor:pointer;">
+        🛠️ Registered Tools (11)
+      </button>
+      <button class="inspector-tab" id="tabBtnLogs" data-tab="logs" style="flex:1; padding:0.65rem 0.5rem; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text-dim); font-weight:700; font-size:0.8rem; cursor:pointer;">
+        ⚡ Live Telemetry
+      </button>
+    </div>
+
+    <!-- Tab 1: Registered Tools Container (11 Tools) -->
+    <div class="inspector-logs-stream" id="mcpToolsContainer">
+      <!-- Dynamically Rendered with 11 tools by ui.js -->
+    </div>
+
+    <!-- Tab 2: Telemetry Log Stream -->
+    <div class="inspector-logs-stream" id="mcpLogsStream" style="display:none;">
+      <!-- Dynamically Rendered with execution logs by ui.js -->
     </div>
   </aside>
 

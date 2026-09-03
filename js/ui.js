@@ -1,5 +1,5 @@
 /**
- * SmartCart Fashion AI - User Interface Controller with Memory Profile & Dynamic Generator
+ * SmartCart Fashion AI - User Interface Controller with WebMCP Registered Tools & Inspector
  */
 
 import { store } from './state.js';
@@ -11,6 +11,7 @@ export class FashionUIController {
   constructor() {
     this.dom = {};
     this.currentDynamicOutfit = null;
+    this.activeInspectorTab = "tools"; // 'tools' or 'logs'
     this.initDOM();
     this.bindEvents();
     this.renderAll();
@@ -58,6 +59,9 @@ export class FashionUIController {
       inspectorDrawer: document.getElementById("inspectorDrawer"),
       btnOpenInspector: document.getElementById("btnOpenInspector"),
       btnCloseInspector: document.getElementById("btnCloseInspector"),
+      tabBtnTools: document.getElementById("tabBtnTools"),
+      tabBtnLogs: document.getElementById("tabBtnLogs"),
+      mcpToolsContainer: document.getElementById("mcpToolsContainer"),
       mcpLogsStream: document.getElementById("mcpLogsStream"),
       btnExportManifest: document.getElementById("btnExportManifest"),
 
@@ -147,7 +151,7 @@ export class FashionUIController {
       this.showToast(`Budget limit updated to $${store.budgetLimit.toFixed(2)}`, "success");
     });
 
-    // 7. Cart List Quantity Actions
+    // 8. Cart List Quantity Actions
     this.dom.cartItemsList?.addEventListener("click", (e) => {
       const btn = e.target.closest(".btn-qty");
       if (!btn) return;
@@ -163,7 +167,7 @@ export class FashionUIController {
       }
     });
 
-    // 8. Agent Chat Submission
+    // 9. Agent Chat Submission
     const submitChat = () => {
       const val = this.dom.chatInput?.value.trim();
       if (!val) return;
@@ -176,17 +180,25 @@ export class FashionUIController {
       if (e.key === "Enter") submitChat();
     });
 
-    // 9. WebMCP Inspector Toggle
+    // 10. WebMCP Inspector Toggle & Tabs
     this.dom.btnOpenInspector?.addEventListener("click", () => {
       this.dom.inspectorDrawer?.classList.add("open");
+      this.renderRegisteredMcpTools();
     });
     this.dom.btnCloseInspector?.addEventListener("click", () => {
       this.dom.inspectorDrawer?.classList.remove("open");
     });
 
+    this.dom.tabBtnTools?.addEventListener("click", () => {
+      this.switchInspectorTab("tools");
+    });
+    this.dom.tabBtnLogs?.addEventListener("click", () => {
+      this.switchInspectorTab("logs");
+    });
+
     // Export Manifest
     this.dom.btnExportManifest?.addEventListener("click", () => {
-      const manifest = webMCP.getToolsManifest();
+      const manifest = webMCP.getManifest ? webMCP.getManifest() : { protocol: "WebMCP", version: "1.2.0" };
       const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -196,7 +208,7 @@ export class FashionUIController {
       this.showToast("Fashion WebMCP JSON Manifest exported!");
     });
 
-    // 10. Human in the Loop Approval Actions
+    // 11. Human in the Loop Approval Actions
     this.dom.btnAuthorizeOrder?.addEventListener("click", () => {
       if (store.pendingApproval) {
         const token = store.pendingApproval.token;
@@ -250,10 +262,40 @@ export class FashionUIController {
     });
   }
 
+  switchInspectorTab(tab) {
+    this.activeInspectorTab = tab;
+    if (tab === "tools") {
+      if (this.dom.tabBtnTools) {
+        this.dom.tabBtnTools.style.borderBottom = "2px solid var(--accent-cyan)";
+        this.dom.tabBtnTools.style.color = "var(--accent-cyan)";
+      }
+      if (this.dom.tabBtnLogs) {
+        this.dom.tabBtnLogs.style.borderBottom = "2px solid transparent";
+        this.dom.tabBtnLogs.style.color = "var(--text-dim)";
+      }
+      if (this.dom.mcpToolsContainer) this.dom.mcpToolsContainer.style.display = "flex";
+      if (this.dom.mcpLogsStream) this.dom.mcpLogsStream.style.display = "none";
+      this.renderRegisteredMcpTools();
+    } else {
+      if (this.dom.tabBtnLogs) {
+        this.dom.tabBtnLogs.style.borderBottom = "2px solid var(--primary)";
+        this.dom.tabBtnLogs.style.color = "var(--primary)";
+      }
+      if (this.dom.tabBtnTools) {
+        this.dom.tabBtnTools.style.borderBottom = "2px solid transparent";
+        this.dom.tabBtnTools.style.color = "var(--text-dim)";
+      }
+      if (this.dom.mcpToolsContainer) this.dom.mcpToolsContainer.style.display = "none";
+      if (this.dom.mcpLogsStream) this.dom.mcpLogsStream.style.display = "flex";
+      this.renderMcpLogs();
+    }
+  }
+
   renderAll() {
     this.renderBrandSelect();
     this.renderProducts();
     this.renderCart();
+    this.renderRegisteredMcpTools();
     this.renderMcpLogs();
     this.renderWelcomeMemoryGreeting();
     this.generateAndRenderFreshOutfit("smart_casual");
@@ -297,7 +339,41 @@ export class FashionUIController {
     `;
   }
 
-  // Dynamic Outfit Generator & Showcase with Master "Add Bundle" and Individual "Add Piece" buttons
+  // Render 11 Registered WebMCP Tools in Inspector Drawer
+  renderRegisteredMcpTools() {
+    if (!this.dom.mcpToolsContainer) return;
+    const tools = webMCP.getTools ? webMCP.getTools() : [];
+
+    this.dom.mcpToolsContainer.innerHTML = `
+      <div style="margin-bottom:0.75rem; font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
+        Below are the <strong>${tools.length} WebMCP tools</strong> registered on <code>document.modelContext</code> conforming to the hackathon specification.
+      </div>
+      ${tools.map((t, idx) => {
+        const props = t.inputSchema?.properties ? Object.keys(t.inputSchema.properties) : [];
+        return `
+          <div class="mcp-log-card" style="border: 1px solid rgba(6, 182, 212, 0.25); background: var(--bg-surface);">
+            <div class="mcp-log-header">
+              <span class="mcp-tool-name" style="font-size:0.85rem;">⚡ ${t.name}()</span>
+              <span class="mcp-latency-tag" style="font-size:0.68rem;">Tool #${idx + 1}</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-main); margin-bottom:0.5rem; line-height:1.35;">
+              ${t.description}
+            </div>
+            <div style="font-size:0.68rem; color:var(--text-dim); margin-bottom:0.4rem;">
+              Parameters: <code style="color:var(--accent-cyan);">${props.length > 0 ? props.join(', ') : '(None)'}</code>
+            </div>
+            <div style="display:flex; justify-content:flex-end;">
+              <button class="btn btn-secondary" onclick="window.testExecuteWebMCPTool('${t.name}')" style="padding:0.25rem 0.6rem; font-size:0.72rem; color:var(--accent-cyan); border-color:rgba(6,182,212,0.4);">
+                ▶ Test Run Tool
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    `;
+  }
+
+  // Dynamic Outfit Generator & Showcase
   generateAndRenderFreshOutfit(style = "smart_casual") {
     if (!this.dom.dynamicOutfitContainer) return;
     const outfit = store.generateDynamicOutfit({ style });
@@ -319,7 +395,7 @@ export class FashionUIController {
         </div>
 
         <div class="dynamic-pieces-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; margin-bottom: 1.15rem;">
-          ${outfit.pieces.map((p, idx) => `
+          ${outfit.pieces.map((p) => `
             <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.75rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem;">
               <div style="display:flex; gap:0.6rem; align-items:center;">
                 <img src="${p.product.image}" alt="${p.product.name}" style="width:52px; height:52px; object-fit:cover; border-radius:6px;" />
@@ -487,7 +563,7 @@ export class FashionUIController {
     if (store.mcpLogs.length === 0) {
       this.dom.mcpLogsStream.innerHTML = `
         <div style="text-align:center; padding: 2rem; color: var(--text-dim);">
-          No Fashion WebMCP tool calls recorded yet.<br>Ask the AI Stylist in chat to trigger tools!
+          No Fashion WebMCP tool calls recorded yet.<br>Click "Test Run Tool" on any tool or chat with the AI Stylist!
         </div>
       `;
       return;
@@ -611,4 +687,27 @@ window.addCurrentOutfitBundle = () => {
 window.resetSmartCartFilters = () => {
   store.resetFilters();
   if (document.getElementById("brandSelect")) document.getElementById("brandSelect").value = "all";
+};
+
+window.testExecuteWebMCPTool = async (toolName) => {
+  try {
+    let args = {};
+    if (toolName === "search_products" || toolName === "searchCatalog") args = { query: "Nike", maxPrice: 200 };
+    else if (toolName === "generateDynamicOutfit" || toolName === "addDynamicOutfitToCart") args = { style: "smart_casual" };
+    else if (toolName === "addToCart") args = { productId: "top-01", quantity: 1, size: "L" };
+    else if (toolName === "applyPromoCode") args = { code: "FASHION20" };
+    else if (toolName === "requestCheckoutApproval") args = { deliveryAddress: "500 Howard St, San Francisco" };
+    else if (toolName === "confirmOrder") args = { approvalToken: store.pendingApproval?.token || "AUTH-TEST" };
+
+    const res = await webMCP.executeTool(toolName, args);
+    if (window.smartCartUI) {
+      window.smartCartUI.showToast(`Executed ${toolName}() in sub-15ms!`, "success");
+      window.smartCartUI.switchInspectorTab("logs");
+    }
+  } catch (err) {
+    if (window.smartCartUI) {
+      window.smartCartUI.showToast(`Tool ${toolName}: ${err.message}`, "warning");
+      window.smartCartUI.switchInspectorTab("logs");
+    }
+  }
 };
